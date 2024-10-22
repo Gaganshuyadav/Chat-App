@@ -1,0 +1,77 @@
+
+/*send message input*/
+.sendMessage{
+    width:100%;
+    bottom:0;
+    position:relative;
+}
+
+.sendMessage > form{
+    margin:"1px auto";
+    width:87%;
+    margin:0 0 0 10px;
+}
+
+.sendMessage > form > textarea{
+    padding:15px 50px;
+    border-radius:25px;
+    background-color:rgb(238, 228, 226);
+    width:100%;
+    color:rgba(0, 0, 0, 0.76);
+    font:600 16px "Roboto"; 
+    resize: none;
+    outline: none;
+    border:none;
+}
+
+.sendMessage > form > textarea::-webkit-scrollbar{
+    display:none;
+}
+
+/*file attach icon*/
+
+.attachFileIcon{
+    position:absolute;
+    left:15px;
+    border-radius: 50%;
+}
+
+.attachFileIcon  >button{
+    transform: rotate(30deg);
+}
+
+.attachFileIcon > button > svg{
+    font-size: 25px;
+}
+
+
+
+/*send message icon*/
+.sendIcon {
+    margin-left:1.6%;
+    margin-bottom: 5px;
+}
+
+
+.sendIcon  > button{
+    background-color: rgb(250, 125, 103);
+    transform: rotate(-30deg);
+}
+
+.sendIcon  > button:hover{
+    background-color: rgb(250, 145, 126);
+}
+
+
+.sendIcon > button > svg{
+    color:white;
+    font-size: 30px;
+}
+
+
+@media screen and (min-width:0px)and (max-width:600px){
+.sendMessage > form{
+    margin:0 0 0 4px;
+}
+
+}

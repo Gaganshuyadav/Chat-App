@@ -1,0 +1,270 @@
+
+/* login form*/
+.loginPage{
+    width:100vw;
+    height:100vh;
+    display:flex;
+    justify-content: center;
+    align-items: center;
+    background-image: linear-gradient(to top, #fbc2eb 0%, #a6c1ee 100%);
+}
+
+.loginPage > div > div > p:nth-child(1){
+    margin:2vh 0;
+    text-align: center;
+    font-size: 2vmax;
+    color: gray;
+
+}
+
+.loginPage > div > div > p:nth-child(3){
+    margin:0.8vh 0;
+    text-align: center;
+    font-size: 1.3vmax;
+    color: rgba(0, 0, 0, 0.808);
+
+}
+
+.toggleLogin{
+    display:flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    margin:2vh auto;
+}
+.toggleLogin > div{
+    font-family: "Roboto";
+}
+.toggleLogin> button{
+    border:none;
+    font-size:1.2vmax;
+    color:rgb(82, 82, 243);
+    font-family:"Roboto";
+    text-align:center;
+    display:block;
+    padding:4px;
+    border-radius: 5px;
+    background-color: white;
+}
+
+
+.toggleLogin> button:hover{
+    background-color: rgb(204, 204, 240);
+    color:white;
+    transition:all 1000ms;
+}
+
+.toggleLogin> button:active{
+    background-color: gray;
+    color:white;
+    transition:all 100ms;
+}
+
+
+.loginForm > div{
+    width:80%;
+    margin: 4vh auto;
+}
+
+.loginForm > button{
+    border:none;
+    background-color: rgb(82, 82, 243);
+    color:white;
+    font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    text-align:center;
+    box-shadow: 1px 1px 7px gray;
+    width:80%;
+    display:block;
+    padding:4px 0;
+    margin:2vh auto;
+    border-radius: 5px;
+}
+
+.loginForm > button:hover {
+    background-color: rgb(112, 112, 245);
+}
+
+@media screen and (min-width:0px)and (max-width:700px){
+    
+    
+.loginPage > div > div > p:nth-child(1){
+    font-size: 3vmax;
+
+}
+
+.loginPage > div > div > p:nth-child(3){
+    font-size: 1.7vmax;
+
+}
+
+
+.toggleLogin> button{
+    font-size:2vmax;
+}
+}
+
+/*--------------------------------------------------------------------------*/
+
+/* Signup form*/
+.signupPage{
+    width:100vw;
+    height:140vh;
+    display:flex;
+    justify-content: center;
+    align-items: center;
+    background-image: linear-gradient(to top, #fbc2eb 0%, #a6c1ee 100%);
+}
+
+.signupPage > div > div > p:nth-child(1){
+    margin:2vh 0 0 0;
+    text-align: center;
+    font-size: 2vmax;
+    color: gray;
+
+}
+
+.signupPage > div > div > p:nth-child(3){
+    margin:0.8vh 0;
+    text-align: center;
+    font-size: 1.3vmax;
+    color: rgba(0, 0, 0, 0.808);
+
+}
+
+.toggleSignup{
+    display:flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    margin:2vh auto;
+}
+.toggleSignup > div{
+    font-family: "Roboto";
+}
+.toggleSignup> button{
+    border:none;
+    font-size:1.2vmax;
+    color:rgb(82, 82, 243);
+    font-family:"Roboto";
+    text-align:center;
+    display:block;
+    padding:4px;
+    border-radius: 5px;
+    background-color: white;
+}
+
+
+.toggleSignup> button:hover{
+    background-color: rgb(204, 204, 240);
+    color:white;
+    transition:all 1000ms;
+}
+
+.toggleSignup> button:active{
+    background-color: gray;
+    color:white;
+    transition:all 100ms;
+}
+
+.signupForm > div{
+    width:80%;
+    margin: 4vh auto;
+}
+
+.signupForm > button{
+    border:none;
+    background-color: rgb(82, 82, 243);
+    color:white;
+    font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    text-align:center;
+    box-shadow: 1px 1px 7px gray;
+    width:80%;
+    display:block;
+    padding:4px 0;
+    margin:2vh auto;
+    border-radius: 5px;
+}
+
+.signupForm > button:hover {
+    background-color: rgb(112, 112, 245);
+}
+
+/*profile*/
+
+.profile{
+    display:flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.PreviewImage{
+    display: flex;
+    position:relative;
+}
+
+.PreviewImage > img{
+    width:30vmin;
+    height:30vmin;
+    object-fit: cover;
+    border-radius: 50%;
+    position: relative;
+}
+
+.profileBox{
+    position:absolute;
+    bottom:4px;
+    right:4px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+
+.profileBox > div{
+    position: relative;
+    width:8vmin;
+    height:8vmin;
+    background-color: rgb(122, 121, 121, 0.8);
+} 
+
+.profileBox > div:hover{
+    background-color: rgb(122, 121, 121, 1);
+} 
+
+.profileBox > div > input{
+    color:transparent;
+    width:30vmin;
+    height:30vmin;
+    position:relative;
+    z-index: 4;
+} 
+
+.profileBox > svg{
+    position: absolute;
+    font-size: 5vmin;
+    color:black;
+    z-index: 2;
+} 
+
+
+@media screen and (min-width:0px)and (max-width:700px){
+    
+    .signupPage{
+        height:110vh;
+    }
+    
+    
+.signupPage > div > div > p:nth-child(1){
+    font-size: 3vmax;
+
+}
+
+.signupPage > div > div > p:nth-child(3){
+    font-size: 1.7vmax;
+
+}
+
+.toggleSignup> button{
+    font-size:2vmax;
+}
+}

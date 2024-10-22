@@ -1,0 +1,23 @@
+
+@media screen and (min-width:800px){
+    
+.content-handle,.chatListSpecific::-webkit-scrollbar{
+    width:7px;
+    height:7px;
+}
+.content-handle,.chatListSpecific::-webkit-scrollbar-thumb{
+    border:none;
+    background-color: rgba(24, 24, 24, 0.247);
+    border-radius:10px;
+}
+.content-handle,.chatListSpecific::-webkit-scrollbar-track{
+    border:none;
+}
+.content-handle,.chatListSpecific::-webkit-scrollbar-corner{
+    border:none;
+}
+.content-handle,.chatListSpecific::-webkit-scrollbar-button{
+    border: none;
+}
+
+}
