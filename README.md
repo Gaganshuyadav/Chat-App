@@ -18,7 +18,8 @@ This is a real-time chat application built using the MERN stack (MongoDB, Expres
 
 - **Frontend**: 
   - React
-  - Redux
+  - @reduxjs/toolkit
+  - RTK Query
   - React Router DOM
   - Material UI
   - Axios
