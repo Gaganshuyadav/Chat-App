@@ -9,7 +9,7 @@ import NotificationsIcon from '@mui/icons-material/Notifications';
 import AddIcon from '@mui/icons-material/Add';
 import ProfileIcon from "@mui/icons-material/AccountCircle";
 /*mui components */
-import { IconButton, Tooltip, Typography, Backdrop, Box } from "@mui/material";
+import { IconButton, Tooltip, Typography, Backdrop, Badge } from "@mui/material";
 //dialogs
 const Notifications = lazy( ()=> import("../Specific/Notifications.jsx"));
 const NewGroup = lazy(()=>import("../Specific/NewGroup.jsx"));
@@ -20,6 +20,7 @@ import { logout} from "../../redux/features/thunks/user.jsx";
 import { clearError, clearSuccess} from "../../redux/features/Slices/userSlice.jsx";
 import { toast} from "react-hot-toast";
 import { setIsMobile, setIsSearch, setIsNotification} from "../../redux/features/Slices/componentSlice.jsx";
+import { resetNotificationCount     } from '../../redux/features/Slices/notifySlice.jsx';
 
 const Header = () => {
 
@@ -28,6 +29,7 @@ const Header = () => {
     const { isMobile, isSearch, isNotification} = useSelector( state=>state.component);
     const { isLogin, success, error, isLoading} = useSelector( state=>state.user);
     const { user} = useSelector( state=> state.user);
+    const { notificationCount} = useSelector( state=> state.notify);
 
     const [ isNewGroup, setIsNewGroup] = useState(false);
 
@@ -47,7 +49,10 @@ const Header = () => {
     }
     const openNotification = () =>{
         dispatch( setIsNotification(true));
+        dispatch( resetNotificationCount());
+
     }
+   
 
     //if not logged in redirect to login page
     if(!isLogin){
@@ -107,7 +112,7 @@ const Header = () => {
                 <IconBtn Title={"Search"} icon={<SearchIcon/>}  onClick={openSearch}/>
                 <IconBtn Title={"New Group"} icon={<AddIcon/>} onClick={()=>setIsNewGroup(!isNewGroup)}/>
                 <IconBtn Title={"Manage Groups"} icon={<GroupsIcon/>} onClick={ handleManageGroups}/>
-                <IconBtn Title={"Notifications"} icon={<NotificationsIcon/>} onClick={openNotification}/>
+                <IconBtn Title={"Notifications"} icon={<NotificationsIcon/>} onClick={openNotification} count={ notificationCount} />
                 <IconBtn Title={"Logout"} icon={<LogoutIcon/>} onClick={ handleLogout}/>
             </div>
         </div>
@@ -137,12 +142,15 @@ const Header = () => {
   )    
 }
 
-const IconBtn = ( { Title, icon, onClick }) =>{
+const IconBtn = ( { Title, icon, onClick, count=0 }) =>{
     return(
         <Tooltip title={Title} placement="bottom">
             <IconButton onClick={onClick} sx={{color:"rgb(243, 243, 243)", marginRight:"0.5vw"}}>
-                {icon}
+                <Badge badgeContent={count} max={99} color="primary" >
+                    {icon}
+                </Badge>
             </IconButton>
+            
         </Tooltip>
     )
 }

@@ -3,8 +3,11 @@ import { User} from "../models/user.js";
 import { Message} from "../models/message.js";
 import { errorHandler, catchAsyncErrors} from "../middlewares/error.js"; 
 import  { emitEvent} from "../utils/features.js";
-import { ALERT, REFETCH_CHATS, NEW_ATTACHMENT, NEW_MESSAGE_ALERT } from "../constants/events.js";
-  
+import { ALERT, REFETCH_CHATS, NEW_MESSAGE, NEW_MESSAGE_ALERT } from "../constants/events.js";
+import { v2 as cloudinary} from "cloudinary";  
+import { getSockets } from "../lib/helper.js";
+import { v4 as uuid} from "uuid";
+
 const newGroupChat = catchAsyncErrors( async ( req, res, next)=>{
     
     const { name, members } = req.body;
@@ -233,11 +236,16 @@ const leaveGroup = catchAsyncErrors( async( req, res, next)=>{
 const sendAttachments = catchAsyncErrors( async( req, res, next)=>{
 
     const { chatId} = req.body;
+
+    console.log(req)
+    console.log(req.files);
+    console.log(req.body);
+
     
     //get chat and user
     const chat = await Chat.findById(chatId);
 
-    if(req.files){
+    if(!req.files){
         return next( new errorHandler("Please Upload Atttachments", 400));
     }
 
@@ -245,11 +253,7 @@ const sendAttachments = catchAsyncErrors( async( req, res, next)=>{
         return next( new errorHandler("Chat Not Found", 404));
     }
 
-    const files = req.files || [];
-
-    //cloudinary work==============================================
-
-    const attachments = [{}];
+    const attachments = req.files || [];
 
     if(attachments.length < 1){
         return next( new errorHandler("Please provide attachments", 400));
@@ -259,28 +263,65 @@ const sendAttachments = catchAsyncErrors( async( req, res, next)=>{
         return next( new errorHandler("Attachments should not be greater than 5", 400));
     }
 
-    const messageForDB = {
-        chat: chatId,
-        content: "",
-        attachments: attachments,
-        sender: req.user._id,
+    //cloudinary
+    let uploadedAttachments = [];
+    
+    try{
+        for( let i=0; i< attachments.length; i++){
+            let getBase64 = `data:${attachments[i].mimetype};base64,${attachments[i].buffer.toString("base64")}`;
+
+            //check resource type
+            const cloud = await cloudinary.uploader.upload( getBase64, {
+                resource_type: "auto",
+                folder: "/ChatApp-01/attachments",
+            })
+
+            console.log(cloud);
+
+            //database message
+            const messageForDB = {
+                chat: chatId,
+                content: "",
+                attachments: {
+                    public_id: cloud.public_id,
+                    url: cloud.secure_url,
+                },
+                sender: req.user._id,
+            }
+
+            //create Message DB
+            const message = await Message.create( messageForDB);
+            
+            //add all attachments for real-time emit event 
+            uploadedAttachments.push({ public_id: cloud.public_id, url: cloud.secure_url});
+           
+        }
+    }
+    catch(err){
+        console.log(err);
+        return next(new errorHandler("unable to upload",500));
+
     }
 
-    //create Message DB
-    const message = await Message.create( messageForDB);
-    console.log(message);
-
-    //emit message
-    const messageForRealTime = {
-        ...messageForDB,
+     //emit message
+     const messageForRealTime = {
+        _id: uuid(),
+        chat: chatId,
+        content: "",
+        attachments: uploadedAttachments,
         sender: {
             _id: req.user._id,
             name: req.user.name,
-        }
+        },
+        createdAt: new Date().toISOString(),
     }
 
-    emitEvent( res, NEW_ATTACHMENT, chat.members, { message: messageForRealTime, chatId});
-    emitEvent( res, NEW_MESSAGE_ALERT, chat.members, { chatId});
+    // get socket id for all members
+    const members = getSockets(chat.members);
+    
+    req.app.get("io").to(members).emit(NEW_MESSAGE, { message: messageForRealTime} );
+    // emitEvent( res, NEW_MESSAGE_ALERT, chat.members, { chatId});
+
 
     res.status(200).json({
         success:true,

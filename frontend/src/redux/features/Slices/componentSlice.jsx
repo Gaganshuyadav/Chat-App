@@ -6,6 +6,7 @@ const componentSlice = createSlice({
         isMobile: false,
         isSearch: false,
         isNotification: false,
+        isFileMenu: false,
     },
     reducers:{
         setIsMobile : ( state, action)=>{
@@ -17,11 +18,14 @@ const componentSlice = createSlice({
         setIsNotification: ( state, action)=>{
             state.isNotification = action.payload;
         },
+        setIsFileMenu: ( state, action)=>{
+            state.isFileMenu = action.payload;
+        },
     },
 
 });
 
-export const { setIsMobile, setIsSearch, setIsNotification} = componentSlice.actions;
+export const { setIsMobile, setIsSearch, setIsNotification, setIsFileMenu} = componentSlice.actions;
 export default componentSlice.reducer;
 
 

@@ -78,7 +78,7 @@ const sendAttachmentsValidator = () =>[
 const chatIdValidator = () =>[
     param("id")
         .notEmpty().withMessage("Please Enter Chat Id")
-        .isLength(24).withMessage("Chat ID length should be 24"),
+        .isLength({ min:24,max:24}).withMessage("Chat ID length should be 24"),
 ]; 
 
 

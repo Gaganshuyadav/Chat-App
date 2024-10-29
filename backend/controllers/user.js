@@ -164,7 +164,7 @@ const sendFriendRequest = catchAsyncErrors( async( req, res, next)=>{
         receiver: userId,
     });
 
-    emitEvent( req, NEW_REQUEST, [ userId]);
+    emitEvent( req, NEW_REQUEST, [ userId],"request");
 
     res.status(201).json({
         success:true,
@@ -230,7 +230,8 @@ const acceptFriendRequest = catchAsyncErrors( async( req, res, next)=>{
 const getAllNotifications = catchAsyncErrors( async( req, res, next)=>{
 
     const requests = await Request.find({ receiver: req.user._id}).populate("sender","name avatar");
-console.log(requests);
+console.log(requests)
+console.log(req.user)
    
     if(!requests){
         return next(new errorHandler("Request not found", 404));

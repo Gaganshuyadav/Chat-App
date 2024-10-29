@@ -11,8 +11,11 @@ This is a real-time chat application built using the MERN stack (MongoDB, Expres
 - **Friend Requests**: Users can send and receive requests to join as friends.
 - **Notifications**: Real-time notifications for messages and friend requests.
 - **Authentication & Authorization**: Secure login and registration using JWT and Bcrypt.
+- **Admin Panel**: the entire control of the site is with the administrator( charts, panel, secret Key). 
+- **Media Share**: users can share photos, videos and audio.
 - **Error Handling**: Comprehensive error handling throughout the application.
 - **Responsive UI**: Built with Material UI for a seamless user experience.
+- **Infinite Scrolling**: Used in UI for Fetching Old chats.
 
 ## Tech Stack
 
@@ -53,3 +56,4 @@ This is a real-time chat application built using the MERN stack (MongoDB, Expres
    ```bash
    git clone https://github.com/Gaganshuyadav/Chat-App.git
    cd chat-app
+  

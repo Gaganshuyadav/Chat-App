@@ -28,8 +28,9 @@ const fileFormat = ( url="") =>{
     return "file";
 }
 
-const transformImage = ( url="")=>{
-    return url;
+const transformImage = ( url="", width=200)=>{
+    let transURL = url.replace("/upload",`/upload/w_${width}`);
+    return transURL;
 }
 
 const getLast7Days = () => {

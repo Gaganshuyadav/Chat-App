@@ -1,4 +1,5 @@
 import jwt from "jsonwebtoken";
+import { getSockets } from "../lib/helper.js";
 
 const sendToken = async ( res, user, statusCode, message) =>{
     
@@ -23,7 +24,11 @@ const sendToken = async ( res, user, statusCode, message) =>{
 }
 
 const emitEvent = ( req, event, users, data) => { 
-    console.log("Emitting event ", event);
+    
+    //get users sockets
+    const usersSockets = getSockets(users);
+
+    req.app.get("io").to(usersSockets).emit( event, data);
 };
 
 export { sendToken, emitEvent};

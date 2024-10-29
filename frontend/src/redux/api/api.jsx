@@ -89,6 +89,28 @@ const api = createApi({
             },
             providesTags: ["Chat"],
         }),
+        getMessages: builder.query({
+            query: ( { chatId, page=1 } )=>({
+                url: `/chat/message/${chatId}?page=${page}`,
+                credentials:"include",
+                headers:{
+                    "Content-Type":"application/json",
+                    "Authorization":`Bearer ${token}`,
+                }
+            }),
+            keepUnusedDataFor: 0,
+        }),
+        sendAttachments: builder.mutation({
+            query: ( formData)=>({
+                url: `/chat/message`,
+                method:"POST",
+                body: formData,
+                credentials: "include",
+                headers:{
+                    "Authorization":`Bearer ${token}`,
+                }
+            }),
+        }),
     })
 })
 
@@ -101,6 +123,8 @@ export const {
     useGetNotificationsQuery,
     useAcceptFriendRequestMutation,
     useGetChatDetailsQuery,
+    useGetMessagesQuery,
+    useSendAttachmentsMutation,
 } = api;
 
 

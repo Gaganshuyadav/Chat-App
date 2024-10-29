@@ -46,6 +46,8 @@ const Notifications = () => {
     }
   }
 
+  console.log(data);
+
 
   return (
     <Dialog open={ isNotification} onClose={()=>{ dispatch( setIsNotification(false))}}>

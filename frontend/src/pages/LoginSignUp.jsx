@@ -38,6 +38,13 @@ export default function Login(){
 
     //avatar image url
     const handleAvatar = (e) =>{
+      console.log(e.target.files[0])
+
+      //file should not more then 6mb
+      if(e.target.files[0].size >6000000){
+        toast.error(`Please ensure your file is 6 MB or less`);
+        return;
+    }
       
       //for multer send file
       setAvatar(e.target.files[0]);

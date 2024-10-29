@@ -38,12 +38,15 @@ const server = http.createServer(app);
 
 const io = new Server( server, {
     cors:{
-        origin:"http://localhost:5173",
+        origin: true,
         methods:['GET','POST'],
         credentials:true,
     }
 });
 //------
+
+//SET APP for emit the events with responses,
+app.set("io",io);
 
 
 
@@ -61,6 +64,7 @@ app.use(cors({
 import userRoute from "./routes/user.js"; 
 import chatRoute from "./routes/chat.js";
 import adminRoute from "./routes/admin.js";
+import { Message } from "./models/message.js";
 
 app.use("/api/v1/user", userRoute);
 app.use("/api/v1/chat", chatRoute);
@@ -79,18 +83,18 @@ app.use("/api/v1/admin", adminRoute);
 let userSocketIDs = new Map();
 
 io.on( "connection", ( socket)=>{
-    console.log("a user connected ",socket.id);
+    // console.log("a user connected ",socket.id);
     
      //set active users
      userSocketIDs.set( socket.user._id.toString(), socket.id);
 
-     console.log("------------")
+    
      userSocketIDs.forEach(( key, value)=>{
-        console.log(value, " ==", key);
+        // console.log(value, " ==", key);
      })
-     console.log("--+-+--+--+--+-+--")
 
-    socket.on( NEW_MESSAGE, ( { chatId, members, message})=>{
+    //new Message
+    socket.on( NEW_MESSAGE, async ( { chatId, members, message})=>{
 
         const messageForRealTime = {
             content: message,
@@ -121,11 +125,20 @@ io.on( "connection", ( socket)=>{
          //alert for members
          io.to(membersSocket).emit(NEW_MESSAGE_ALERT, { chatId});
 
+         //save message in database
+        try{
+            await Message.create(messageForDB);
+        }
+        catch(err){
+            console.log(err);
+        }
+
     })
+
    
 
     socket.on("disconnect", ()=>{
-        console.log("user disconnected",socket.id);
+        // console.log("user disconnected",socket.id);
         //delete disconnect users
         userSocketIDs.delete(socket.user._id.toString());
 
