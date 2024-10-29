@@ -16,6 +16,7 @@ This is a real-time chat application built using the MERN stack (MongoDB, Expres
 - **Error Handling**: Comprehensive error handling throughout the application.
 - **Responsive UI**: Built with Material UI for a seamless user experience.
 - **Infinite Scrolling**: Used in UI for Fetching Old chats.
+- **Admin Control Panel**: Manage Users, messages and groups.
 
 ## Tech Stack
 
