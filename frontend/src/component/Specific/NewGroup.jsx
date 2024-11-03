@@ -1,26 +1,26 @@
-import { useState} from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogTitle, TextField, Box, List, Button, Typography} from "@mui/material";
 import UserItem from '../shared/UserItem';
+import { useGetMyFriendsQuery, useMakeNewGroupMutation } from "../../redux/api/api";
+import { toast} from "react-hot-toast";
+import { setIsNewGroup } from "../../redux/features/Slices/componentSlice";
+import  { useDispatch, useSelector} from "react-redux";
 
 const NewGroup = () => {
 
-  const users = [
-                 { name: "gagan yadav", _id: "1", groupChat: false, members: ["1","2"], avatar: "https://images.unsplash.com/photo-1726853522009-8dc4c4e306a3?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"},
-                 { name: "aman yadav", _id: "2", groupChat: false, members: ["1","2"], avatar: "https://images.unsplash.com/photo-1726853522009-8dc4c4e306a3?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"},
-                 { name: "deepak yadav", _id: "3", groupChat: false, members: ["1","2"], avatar: "https://images.unsplash.com/photo-1726853522009-8dc4c4e306a3?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"},
-                 { name: "anshu yadav", _id: "4", groupChat: false, members: ["1","2"], avatar: "https://images.unsplash.com/photo-1726853522009-8dc4c4e306a3?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"},
-                 { name: "gagan ", _id: "5", groupChat: false, members: ["1","2"], avatar: "https://images.unsplash.com/photo-1726853522009-8dc4c4e306a3?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"},
-                 { name: "aman yadav", _id: "6", groupChat: false, members: ["1","2"], avatar: "https://images.unsplash.com/photo-1726853522009-8dc4c4e306a3?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"},
-                 { name: "deepak yadav", _id: "7", groupChat: false, members: ["1","2"], avatar: "https://images.unsplash.com/photo-1726853522009-8dc4c4e306a3?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"},
-                 { name: "anshu yadav", _id: "8", groupChat: false, members: ["1","2"], avatar: "https://images.unsplash.com/photo-1726853522009-8dc4c4e306a3?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"}
-          ]
-  
+  const dispatch = useDispatch();
+  const { isNewGroup} = useSelector( state=>state.component);
 
+  //get my friends
+  const getMyFriends = useGetMyFriendsQuery();
+
+  // make new group
+  const [ makeNewGroup, makeNewGroupAdded] = useMakeNewGroupMutation();
+ 
+  const [ groupName, setGroupName] = useState("");
   const [ selectedMembers, setSelectedMembers] = useState([]);
-  const [ members, setMembers] = useState(users);
 
-  let isLoadingSendFriendRequest = false;
-
+  //select members handler
   let selectMemberHandler = (_id) =>{
 
     //1.
@@ -36,16 +36,63 @@ const NewGroup = () => {
     }
 
   }
-  console.log(selectedMembers);
+
+  //create New Group
+  const handleCreateNewGroup = async () =>{
+
+    //name required
+    if( !groupName.trim()){
+      toast.error("Group Name is required");
+      return;
+    }
+
+    //members length
+    if( selectedMembers.length < 2 ){
+      toast.error("Please Select at least 2 members");
+      return;
+    }
+
+    const toastId = toast.loading("New Group Creating...");
+    try{
+      const result = await makeNewGroup({ name: groupName, members: selectedMembers});
+      if(result.data){
+        toast.success(result.data.message,{ id: toastId});
+      }
+      else{
+        toast.error(result.error.data.message ||"Something went wrong", { id: toastId});
+      }
+    }
+    catch(err){
+      console.log(err);
+      toast.dismiss();
+    }
+
+    // dispatch( setIsNewGroup( false));
+  };
+
+
+
+
+  //for errors
+  useEffect(()=>{
+
+    if(getMyFriends.isError){
+      toast.error( getMyFriends?.error?.message || "Something went wrong");
+    }
+
+  },[getMyFriends]);
+  
 
   return (
-    <Dialog open={true}  >
+    <Dialog open={ isNewGroup} onClose={ ()=>{ dispatch( setIsNewGroup(false))}}>
       <Box sx={{width:{xs:"80vw",sm:"60vw",md:"50vw",lg:"30vw"}}}>
         <DialogTitle sx={{textAlign:"center", fontSize:"2.4rem", fontWeight:"400",color:"rgb(73, 72, 72)"}}>New Group</DialogTitle>
 
         < div className="notifications" style={{ width:"100%", display:"flex", alignItems:"center", margin:"0 auto"}} >
           <TextField 
               type="text"  
+              value={ groupName}
+              onChange={ (e)=>{ setGroupName(e.target.value)}}
               style={{ margin:"auto", width:"80%"}} 
               placeholder="Group Name"
           />
@@ -55,7 +102,7 @@ const NewGroup = () => {
           <Typography sx={{padding:"20px 0 5px 18px"}}>Members</Typography>
         <List>
           {
-            members && members.map((user)=>{
+            getMyFriends.data && getMyFriends.data.allMyFriends.map((user)=>{
               return(
                     <UserItem key={user._id} user={ user} handler={ selectMemberHandler} isAdded={ selectedMembers.includes(user._id)} /> 
               )
@@ -63,8 +110,8 @@ const NewGroup = () => {
           }
           </List>
           <Box sx={{ width:"80%", margin:"1.5rem auto",display:"flex", justifyContent:"space-evenly", alignItems:"center"}}>
-            <Button color="error" variant="text" size="large" >CANCEL</Button>
-            <Button color="primary" variant="contained" size="large" sx={{letterSpacing:"1px"}}>CREATE</Button>
+            <Button color="error" variant="text" size="large" onClick={ ()=>{ dispatch( setIsNewGroup(false))}} >CANCEL</Button>
+            <Button color="primary" variant="contained" size="large" onClick={ handleCreateNewGroup} disabled={ makeNewGroupAdded.isLoading} sx={{letterSpacing:"1px"}} >CREATE</Button>
           </Box>
         </Box>
 

@@ -19,19 +19,18 @@ import { useDispatch, useSelector} from "react-redux";
 import { logout} from "../../redux/features/thunks/user.jsx";
 import { clearError, clearSuccess} from "../../redux/features/Slices/userSlice.jsx";
 import { toast} from "react-hot-toast";
-import { setIsMobile, setIsSearch, setIsNotification} from "../../redux/features/Slices/componentSlice.jsx";
+import { setIsMobile, setIsSearch, setIsNotification, setIsNewGroup} from "../../redux/features/Slices/componentSlice.jsx";
 import { resetNotificationCount     } from '../../redux/features/Slices/notifySlice.jsx';
 
 const Header = () => {
 
     const navigate = useNavigate();
     const dispatch = useDispatch();
-    const { isMobile, isSearch, isNotification} = useSelector( state=>state.component);
+    const { isMobile, isSearch, isNotification, isNewGroup} = useSelector( state=>state.component);
     const { isLogin, success, error, isLoading} = useSelector( state=>state.user);
     const { user} = useSelector( state=> state.user);
     const { notificationCount} = useSelector( state=> state.notify);
 
-    const [ isNewGroup, setIsNewGroup] = useState(false);
 
     const handleManageGroups = () =>{
         navigate("/groups");
@@ -52,6 +51,10 @@ const Header = () => {
         dispatch( resetNotificationCount());
 
     }
+
+    const openCreateNewGroup = () =>{
+        dispatch( setIsNewGroup(true));
+    }
    
 
     //if not logged in redirect to login page
@@ -60,10 +63,10 @@ const Header = () => {
     }
 
     useEffect(()=>{
-        if(success){
-            toast.success("User Logout Successfully");
-            dispatch( clearSuccess());
-        }
+        // if(success){
+        //     toast.success("User Logout Successfully");
+        //     dispatch( clearSuccess());
+        // }
         if(error){
             toast.error(error);
             dispatch( clearError());
@@ -110,7 +113,7 @@ const Header = () => {
                 </Tooltip>
 
                 <IconBtn Title={"Search"} icon={<SearchIcon/>}  onClick={openSearch}/>
-                <IconBtn Title={"New Group"} icon={<AddIcon/>} onClick={()=>setIsNewGroup(!isNewGroup)}/>
+                <IconBtn Title={"New Group"} icon={<AddIcon/>} onClick={  openCreateNewGroup}/>
                 <IconBtn Title={"Manage Groups"} icon={<GroupsIcon/>} onClick={ handleManageGroups}/>
                 <IconBtn Title={"Notifications"} icon={<NotificationsIcon/>} onClick={openNotification} count={ notificationCount} />
                 <IconBtn Title={"Logout"} icon={<LogoutIcon/>} onClick={ handleLogout}/>

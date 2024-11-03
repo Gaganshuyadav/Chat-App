@@ -8,6 +8,7 @@ This is a real-time chat application built using the MERN stack (MongoDB, Expres
 ## Features
 
 - **Group Chat**: Users can create and participate in group chats.
+- **Group Chat Creators**: admins can add members Max 100, and remove members, rename group.
 - **Friend Requests**: Users can send and receive requests to join as friends.
 - **Notifications**: Real-time notifications for messages and friend requests.
 - **Authentication & Authorization**: Secure login and registration using JWT and Bcrypt.

@@ -169,18 +169,25 @@ const removeMembers = catchAsyncErrors( async( req, res, next)=>{
     }
 
     if(chat.creator.toString() !== req.user.id.toString()){
-        return next( new errorHandler("You are not allowed to remove members", 401));
+        return next( new errorHandler("Only Admin can remove members", 401));
     }
 
     //check members limit
     if( chat.members.length<=3){
         return next( new errorHandler( "Group must have at least 3 members", 400))
     }
+    
 
     //remove member
     chat.members = chat.members.filter( ( member)=>{
         return member.toString() !== userId.toString();
-    })
+    }) 
+
+    //choose new creator
+    if( userId === chat.creator.toString()){
+        const randomMember = Math.floor((Math.random()*chat.members.length));
+        chat.creator = chat.members[randomMember];
+    }
 
     //save in mongo
     await chat.save();
@@ -190,7 +197,7 @@ const removeMembers = catchAsyncErrors( async( req, res, next)=>{
 
     res.status(200).json({
         success: true,
-        message: "Members removed Successfully",
+        message: "Member removed Successfully",
     })
 })
 
@@ -237,10 +244,6 @@ const sendAttachments = catchAsyncErrors( async( req, res, next)=>{
 
     const { chatId} = req.body;
 
-    console.log(req)
-    console.log(req.files);
-    console.log(req.body);
-
     
     //get chat and user
     const chat = await Chat.findById(chatId);
@@ -276,7 +279,6 @@ const sendAttachments = catchAsyncErrors( async( req, res, next)=>{
                 folder: "/ChatApp-01/attachments",
             })
 
-            console.log(cloud);
 
             //database message
             const messageForDB = {
@@ -332,6 +334,8 @@ const sendAttachments = catchAsyncErrors( async( req, res, next)=>{
 const getChatDetails = catchAsyncErrors( async( req, res, next)=>{
 
 
+    //give all chat details and also members with name, avatar
+
     if( req.query.populate === "true"){
         const chat = await Chat.findById( req.params.id).populate("members","name avatar").lean();
 
@@ -356,6 +360,7 @@ const getChatDetails = catchAsyncErrors( async( req, res, next)=>{
         })
     }
 
+    //give only chatdetails
     else{
         const chat = await Chat.findById( req.params.id);
 
@@ -385,7 +390,7 @@ const renameGroup = catchAsyncErrors( async( req, res, next)=>{
         return next( new errorHandler( "This is not a group chat", 400));
     }
 
-    if(chat.creator.toString() === req.user.id.toString()){
+    if(chat.creator.toString() !== req.user._id.toString()){
         return next( new errorHandler("You are not allowed to rename the group",403));
     }
 

@@ -111,6 +111,87 @@ const api = createApi({
                 }
             }),
         }),
+        getMyFriends: builder.query({
+            query: ( chatId="")=>{
+
+                let url = `/user/friends`;
+                if(chatId){
+                    url += `?chatId=${chatId}`;
+                }
+
+                return{
+                    url ,
+                    credentials: "include",
+                    headers:{
+                        "Content-Type":"application/json",
+                        "Authorization":`Bearer ${token}`
+                    }
+                }
+            },
+            providesTags: ["Chat"],
+        }),
+        makeNewGroup: builder.mutation({
+            query: ( { name, members})=>({
+                url: "/chat/new",
+                method:"POST",
+                body: { name, members},
+                headers: {
+                    "Content-Type":"application/json",
+                    "Authorization": `Bearer ${token}`,
+                }
+            }),
+            invalidatesTags:["Chat"],
+        }),
+        getMyGroups: builder.query({
+            query: ()=>({
+                url: "/chat/my/groups",
+                credentials: "include",
+                headers:{
+                    "Content-Type":"application/json",
+                    "Authorization":`Bearer ${token}`,
+                }
+            }),
+            providesTags: ["Chat"],
+        }),
+        renameGroup: builder.mutation({
+            query: ( { name, chatId })=>({
+                url: `/chat/${chatId}`,
+                method:"PUT",
+                credentials: "include" ,
+                body: { name},
+                headers:{
+                    "Content-Type":"application/json",
+                    "Authorization":`Bearer ${token}`,
+                }
+            }),
+            invalidatesTags: ["Chat"],
+        }),
+        removeGroupMember: builder.mutation({
+            query: ({ userId, chatId})=>({
+                url: "/chat/removeMembers",
+                method:"PUT",
+                credentials: "include",
+                body: { chatId, userId},
+                headers:{
+                    "Content-Type":"application/json",
+                    "Authorization":`Bearer ${token}`,
+                }
+            }),
+            invalidatesTags: ["Chat"],
+        }),
+        addGroupMembers: builder.mutation({
+            query: ({ chatId, members})=>({
+                url: "/chat/addMembers",
+                body:{ chatId, members},
+                method:"PUT",
+                credentials: "include",
+                headers:{
+                    "Content-Type":"application/json",
+                    "Authorization":`Bearer ${token}`,
+                }
+            }),
+            invalidatesTags: ["Chat"],
+        })
     })
 })
 
@@ -125,6 +206,12 @@ export const {
     useGetChatDetailsQuery,
     useGetMessagesQuery,
     useSendAttachmentsMutation,
+    useGetMyFriendsQuery,
+    useMakeNewGroupMutation,
+    useGetMyGroupsQuery,
+    useRenameGroupMutation,
+    useRemoveGroupMemberMutation,
+    useAddGroupMembersMutation,
 } = api;
 
 

@@ -26,7 +26,7 @@ const app = express();
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import { errorMiddleware} from "./middlewares/error.js";
-import { NEW_MESSAGE, NEW_MESSAGE_ALERT } from "./constants/events.js";
+import { NEW_MESSAGE, NEW_MESSAGE_ALERT, START_TYPING, STOP_TYPING } from "./constants/events.js";
 import { v4 as uuid} from "uuid";
 import { getSockets} from "./lib/helper.js";
 import { socketAuthenticate } from "./middlewares/auth.js";
@@ -93,7 +93,7 @@ io.on( "connection", ( socket)=>{
         // console.log(value, " ==", key);
      })
 
-    //new Message
+    // (1).new Message
     socket.on( NEW_MESSAGE, async ( { chatId, members, message})=>{
 
         const messageForRealTime = {
@@ -117,13 +117,10 @@ io.on( "connection", ( socket)=>{
          const membersSocket = getSockets(members);
 
          //send message to all connected members
-         io.to(membersSocket).emit(NEW_MESSAGE, {
+         io.to(membersSocket).emit(NEW_MESSAGE, {   
              chatId,
              message: messageForRealTime,
          })
- 
-         //alert for members
-         io.to(membersSocket).emit(NEW_MESSAGE_ALERT, { chatId});
 
          //save message in database
         try{
@@ -132,7 +129,25 @@ io.on( "connection", ( socket)=>{
         catch(err){
             console.log(err);
         }
+        
+        // (2). message alert for members
+        io.to(membersSocket).emit(NEW_MESSAGE_ALERT, { chatId});
+    })
 
+    // (3). message typing and emit to members
+    socket.on( START_TYPING, ( { chatId, members })=>{
+
+        //get socket IDs
+        const userSocketIDs = getSockets(members);
+
+        io.to(userSocketIDs).emit(START_TYPING, { chatId, message: `${socket.user.name} typing...`})
+    })
+    socket.on( STOP_TYPING, ( { chatId, members })=>{
+
+        //get socket IDs
+        const userSocketIDs = getSockets(members);
+
+        io.to(userSocketIDs).emit(STOP_TYPING, { chatId, message: `${socket.user.name} typing...`})
     })
 
    

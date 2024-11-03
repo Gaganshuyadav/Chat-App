@@ -1,6 +1,6 @@
 import AppLayout from "../component/layout/AppLayout";
 import { Fragment, useRef, useState, useEffect } from "react";
-import { Button, IconButton, CircularProgress} from "@mui/material";
+import { Button, IconButton, CircularProgress, Typography} from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { setIsFileMenu} from "../redux/features/Slices/componentSlice.jsx";
 import TextareaAutosize from "react-textarea-autosize";
@@ -11,7 +11,7 @@ import MessageComponent from "../component/shared/MessageComponent";
 import { getSocket } from "../socket.jsx";
 import { useParams} from "react-router-dom";
 import { useGetChatDetailsQuery, useGetMessagesQuery} from "../redux/api/api.jsx";
-import { NEW_MESSAGE } from "../lib/events.jsx";
+import { NEW_MESSAGE, START_TYPING, STOP_TYPING } from "../lib/events.jsx";
 import { toast} from "react-hot-toast";
 
 const Chat = () => {
@@ -22,6 +22,12 @@ const Chat = () => {
   //message and messages
   const [ message, setMessage] = useState("");
   const [ messages, setMessages] = useState([]);
+
+  //real time typing info
+  const [ typingRealInfo, setTypingRealInfo] = useState(false);
+  const [ typingRealInfoMessage, setTypingRealInfoMessage] = useState("");
+  const typingRef = useRef();
+  const typingEndRef = useRef();
 
   const [ scrollMsg, setScrollMsg] = useState(1); //increment when 20 messages or more 20 messages arrives
   const [ scrollEndMsg, setScrollEndMsg] = useState(1); //when new messages comes
@@ -45,15 +51,10 @@ const Chat = () => {
 
 
   //get chat details------------(api)--to get members to send messages
-    const chatDetails = useGetChatDetailsQuery( { chatId: params.chatId, populate: false}, { skip: !params.chatId} );
+    const chatDetails = useGetChatDetailsQuery( { chatId: params.chatId, populate: false}, { skip: !params.chatId });
   
   //get messages------------(api)
    let oldChunkMessages = useGetMessagesQuery({ chatId: params.chatId, page});
-
-   console.log("1111 chatDetails: ",chatDetails.status);
-   console.log(chatDetails);
-   console.log("2222 oldChunkMessages:",chatDetails.status);
-   console.log(oldChunkMessages);
 
 
      //setMessages with page
@@ -100,7 +101,69 @@ const Chat = () => {
 
 
 
-  //infinite Scroll feature---------------------------
+  //------------------ message handler ( feature of which user Typing)-------------------
+
+  const handleMessageChange = (e) =>{
+   
+    setMessage(e.target.value);
+ 
+    //start typing
+    if(!typingRealInfo){
+        socket.emit(START_TYPING, { chatId: params.chatId, members: chatDetails?.data?.chat?.members});
+        
+    }
+
+    if(typingRef.current){
+      clearTimeout( typingRef.current);
+    
+    }
+
+    //stop typing
+    typingRef.current = setTimeout(()=>{
+      socket.emit(STOP_TYPING, { chatId: params.chatId, members: chatDetails?.data?.chat?.members})
+      
+    },2000)
+    
+    
+  }
+
+  // listen typing message
+  useEffect(()=>{
+    socket.on(START_TYPING, ( data)=>{
+      if(data.chatId != params.chatId) return;
+      setTypingRealInfo(true);
+      setTypingRealInfoMessage(data.message);
+    });
+
+    socket.on(STOP_TYPING, ( data)=>{
+      if(data.chatId != params.chatId) return;
+      setTypingRealInfo(false);
+      setTypingRealInfoMessage("");
+    })
+ 
+  },[socket]);
+
+
+  useEffect(()=>{
+   
+    //this logic is for not going , if at end we can see the message
+    // if(scrollRef.current && (scrollRef.current.scrollTop + scrollRef.current.clientHeight+50) > scrollRef.current.scrollHeight ){
+    //   scrollRef.current.scrollTo( 0, scrollRef.current.scrollHeight);
+    // }
+
+    if(typingEndRef.current){
+      typingEndRef.current.scrollIntoView({ behaviour:"smooth"})
+    }
+
+  },[typingRealInfo]);
+  
+
+
+  //-------------------------------------------------
+
+
+
+  //------------------infinite Scroll feature---------------------------
   const scrollRef = useRef();
   const [ scrollHeightState, setScrollHeightState] = useState(0);
  
@@ -108,7 +171,7 @@ const Chat = () => {
   useEffect(()=>{
 
     if(scrollRef.current){
-      scrollRef.current.scrollTo(0, scrollRef.current.scrollHeight - scrollHeightState);
+      scrollRef.current.scrollTo(2, scrollRef.current.scrollHeight - scrollHeightState);
     }
   
   },[ scrollMsg]);
@@ -125,7 +188,8 @@ const Chat = () => {
     //to set older scroll state
     setScrollHeightState(e.target.scrollHeight);
    
-    if(scrollRef.current.scrollTop<1 && page<=oldChunkMessages.data.totalPages){
+    //isFetching is the important line which stops him to load again and again
+    if(scrollRef.current.scrollTop==0 && page<=oldChunkMessages?.data.totalPages &&  !oldChunkMessages?.isFetching){
       setPage( page=> page+1);
     }
     
@@ -135,7 +199,7 @@ const Chat = () => {
   //when page increases
   useEffect(()=>{
     //use Current data property of RTK query
-      oldChunkMessages.refetch();
+      oldChunkMessages?.refetch();
     
   },[ page]);
   
@@ -168,21 +232,24 @@ const Chat = () => {
 
   
   //------reset all states when go to another chat re-renders----------------
- 
   useEffect(()=>{
 
     return ()=>{
+      setPage(1);
       setMessages([]);
       setMessage("");
-      setScrollMsg(1);
-      setScrollEndMsg(1);
       setScrollHeightState(0);
-      setPage(1)
+      setScrollEndMsg(1);
+      setScrollMsg(1);
+      
     }
+    
     
   },[params.chatId]);
 
-  
+  console.log(chatDetails?.data?.chat?.members)
+  console.log(params.chatId);
+
   //show errors with useEffect----
   useEffect(()=>{
 
@@ -196,33 +263,43 @@ const Chat = () => {
     }
 
   },[ chatDetails]);
-  
-  
+
 
     return (
       <Fragment>
 
         {/* messages */}
-        <div className="messagesRender" ref={scrollRef} onScroll={handleInfiScroll} style={{height:"87%", overflow:"auto", border:"2px solid green", display:"flex", flexDirection:"column", padding:"5px 14px"}}>
+        <div className="messagesRender" ref={scrollRef} onScroll={handleInfiScroll} style={{height:"87%", overflow:"auto", position:"", border:"2px solid green", display:"flex", flexDirection:"column", padding:"5px 14px"}}>
       
-      {
-        (oldChunkMessages.isLoading  || chatDetails.isLoading) && (
-      
-        <div style={{alignSelf:"center"}}>
-            <CircularProgress sx={{color:"rgb(250, 125, 103)"}} />
+            {/* loading */}
+            {
+              (oldChunkMessages?.isFetching  || chatDetails?.isFetching) && (
+            
+              <div style={{alignSelf:"center"}}>
+                  <CircularProgress sx={{color:"rgb(250, 125, 103)"}} />
+              </div>
+              )
+            
+            }
+
+            {
+              messages?.map( ( m, idx)=>{
+                return <MessageComponent key={idx} message={m} user={ user && user} />
+              })
+            }
+
+             {/* typing info */}
+             {
+               typingRealInfo
+               ?
+               (<div ref={typingEndRef}>
+                 <Typography sx={{color:"orange", fontSize:"20px", padding:"0 0 6px 10px"}}>{typingRealInfoMessage}</Typography>
+               </div>)
+             :
+             ""
+             }
+
         </div>
-        )
-      
-      }
-
-        {
-          messages?.map( ( m, idx)=>{
-            return <MessageComponent key={idx} message={m} user={ user && user} />
-          })
-        }
-
-        </div>
-
 
 
         {/* input messages */}
@@ -240,7 +317,7 @@ const Chat = () => {
             <form >
               <TextareaAutosize 
                   value={message} 
-                  onChange={ ( e)=>{ setMessage(e.target.value)}}
+                  onChange={ handleMessageChange}
                   maxRows={3} 
                   minRows={1} 
                   spellCheck={false}

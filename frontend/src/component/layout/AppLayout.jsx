@@ -8,12 +8,12 @@ import { toast} from "react-hot-toast";
 import { useEffect} from "react";
 import { useDispatch, useSelector} from "react-redux";
 import { setIsMobile} from "../../redux/features/Slices/componentSlice.jsx"; 
-import { increaseNotificationCount } from "../../redux/features/Slices/notifySlice.jsx";
+import { increaseNotificationCount, setNewMessagesAlert } from "../../redux/features/Slices/notifySlice.jsx";
 import { getSocket } from "../../socket.jsx";
-import { NEW_REQUEST } from "../../../../backend/constants/events.js";
 
 //-----
 import { useMyChatsQuery} from "../../redux/api/api.jsx";
+import { NEW_MESSAGE_ALERT, NEW_REQUEST } from "../../lib/events.jsx";
 
 
 const AppLayout = () => (WrappedComponent) =>{ 
@@ -26,11 +26,12 @@ const AppLayout = () => (WrappedComponent) =>{
 
         const { isLoading, isError, isSuccess, data, error, refetch} = useMyChatsQuery("");
 
+
+
         //listen friend request( increment notifi count)
         const requestEvent = (data)=>{
                 dispatch( increaseNotificationCount());
         };
-
         useEffect(()=>{
             socket.on( NEW_REQUEST, requestEvent);
             
@@ -40,11 +41,25 @@ const AppLayout = () => (WrappedComponent) =>{
             } 
 
         },[socket]);
-         
 
+
+        //increment messages alerts for each chat
+        const messageAlertEvent = ( data)=>{
+            dispatch( setNewMessagesAlert( {chatId: data.chatId}));
+        }
+        useEffect(()=>{
+            socket.on( NEW_MESSAGE_ALERT, messageAlertEvent);
+
+            return ()=>{
+                socket.off( NEW_MESSAGE_ALERT,messageAlertEvent);
+            }
+        })
+        
+
+        //for errors 
         useEffect(()=>{
             if(isError){
-                toast.error(error?.data?.message)
+                toast.error(error?.data?.message);
             }
 
         },[ isError]);

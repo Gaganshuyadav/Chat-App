@@ -1,11 +1,19 @@
 import { memo} from "react";
 import { AvatarGroup, Box, Avatar, Typography} from "@mui/material";
 import { Link, useParams} from "react-router-dom";
+import { useSelector, useDispatch} from "react-redux";
+import { removeMessagesAlert } from "../../redux/features/Slices/notifySlice";
 
-const ChatItem = ( { chat, idx//avatar=[],//name,//_id,//groupChat = false,//sameSender,//isOnline,//newMessage,//index=0,//handleDeleteChatOpen,
-}) => {
+const ChatItem = ( { chat, idx}) => {
 
   const params = useParams();
+  const dispatch = useDispatch();
+  const {  newMessagesAlert} = useSelector( state=>state.notify);
+
+  //if user open the same chat then alerts should be deleted or not shown
+  if( newMessagesAlert?.find((alert)=>{ return alert.chatId === params.chatId}) ){
+    dispatch( removeMessagesAlert( params.chatId));
+  }
 
   return (
     <Link 
@@ -21,7 +29,8 @@ const ChatItem = ( { chat, idx//avatar=[],//name,//_id,//groupChat = false,//sam
               padding:"10px 30px 10px 1px","&:hover":{backgroundColor: `${chat._id}`!==params.chatId ? "rgba(0, 0, 0, 0.274)":"black" },}}
       >
         
-        <Box sx={{position:"relative", border:"1px solid red"}}>
+        <Box sx={{position:"relative"}}>
+          {/* avatar box */}
           <AvatarGroup max={3} sx={{"& .MuiAvatar-root":{marginLeft:"-32px"}, marginLeft:"13px"}}>
             {
               chat && chat.avatar.map((avtr,i)=>{
@@ -29,10 +38,25 @@ const ChatItem = ( { chat, idx//avatar=[],//name,//_id,//groupChat = false,//sam
               })
             }
           </AvatarGroup>
-          <Box sx={{ position:"absolute", top:"5px", left:"15px" , width:"10px", height:"10px", backgroundColor:"green", borderRadius:"50%"}}></Box>
+          <Box sx={{position:"absolute", top:"5px", left:"15px" , width:"10px", height:"10px", backgroundColor:"green", borderRadius:"50%"}}></Box>
         </Box> 
 
-        <Typography sx={{ marginLeft:"19px", fontSize:"17px"}}>{ chat.name}</Typography>
+        {/* username and alert box */}
+        <Box sx={{border:"1px solid blue"}}>
+            <Typography sx={{  border:"1px solid red",marginLeft:"19px", fontSize:"17px", fontWeight:"500"}}>{ chat.name}</Typography>
+            <Typography sx={{  border:"1px solid red",marginLeft:"19px", fontSize:"14px", color:"green"}}>
+              { newMessagesAlert && newMessagesAlert.find((alert,idx)=>{ 
+                   return alert.chatId === chat._id;
+                })
+                ?
+                `${newMessagesAlert.find((alert,idx)=>{ return alert.chatId === chat._id }).count} new message` 
+                :
+                ""
+              } 
+            </Typography>
+        </Box>
+
+        
       </Box>
     </Link>
   )

@@ -81,6 +81,12 @@ const chatIdValidator = () =>[
         .isLength({ min:24,max:24}).withMessage("Chat ID length should be 24"),
 ]; 
 
+//rename group
+const nameCheckValidator = ()=>[
+    body("name")
+        .notEmpty().withMessage("Group Name is required"),
+];
+
 
 //---------- Admin -----------------
 
@@ -117,5 +123,6 @@ export { registerValidator,
          sendAttachmentsValidator,
          chatIdValidator,
          adminLoginValidator,
-         validateHandler, 
+         validateHandler,
+         nameCheckValidator,
     };

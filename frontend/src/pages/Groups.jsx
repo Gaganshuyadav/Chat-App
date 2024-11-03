@@ -7,95 +7,69 @@ import { IconButton, Box, Tooltip, Drawer, Typography, Avatar, AvatarGroup, Text
 const ConfirmDeleteDialog = lazy(()=>import("../component/dialogs/ConfirmDeleteDialog"));
 const AddMemberDialog = lazy(()=>import("../component/dialogs/AddMemberDialog"));
 import { getSocket} from "../socket";
+import { useGetChatDetailsQuery, useGetMyGroupsQuery, useRemoveGroupMemberMutation, useRenameGroupMutation } from '../redux/api/api';
+import { toast} from "react-hot-toast";
+import { useDispatch, useSelector} from "react-redux";
+import { setIsAddedGroup, setIsDeleteGroup, setIsMobile } from '../redux/features/Slices/componentSlice';
 
 export default function Groups(){
 
-  //fake group data
-  const myGroups = [
-    {
-      avatar: ["https://www.w3schools.com/howto/img_avatar.png"],
-      name: "John Doe",
-      _id: "1",
-      groupChat: false,
-      members: ["1", "2"],
-    },
-    {avatar: ["https://www.w3schools.com/howto/img_avatar.png"],name: "John Boi",_id: "2",groupChat: true,members: ["1", "2"],},
-    {avatar: ["https://www.w3schools.com/howto/img_avatar.png"],name: "John Boi",_id: "2",groupChat: true,members: ["1", "2"],},
-    {avatar: ["https://www.w3schools.com/howto/img_avatar.png"],name: "John Boi",_id: "2",groupChat: true,members: ["1", "2"],},
-    {avatar: ["https://www.w3schools.com/howto/img_avatar.png"],name: "John Boi",_id: "2",groupChat: true,members: ["1", "2"],},
-    {avatar: ["https://www.w3schools.com/howto/img_avatar.png"],name: "John Boi",_id: "2",groupChat: true,members: ["1", "2"],},
-    {avatar: ["https://www.w3schools.com/howto/img_avatar.png"],name: "John Boi",_id: "2",groupChat: true,members: ["1", "2"],},
-    {avatar: ["https://www.w3schools.com/howto/img_avatar.png"],name: "John Boi",_id: "2",groupChat: true,members: ["1", "2"],},
-    {avatar: ["https://www.w3schools.com/howto/img_avatar.png"],name: "John Boi",_id: "2",groupChat: true,members: ["1", "2"],},
-    {avatar: ["https://www.w3schools.com/howto/img_avatar.png"],name: "John Boi",_id: "2",groupChat: true,members: ["1", "2"],},
-    {avatar: ["https://www.w3schools.com/howto/img_avatar.png"],name: "John Boi",_id: "2",groupChat: true,members: ["1", "2"],},
-    {avatar: ["https://www.w3schools.com/howto/img_avatar.png"],name: "John Boi",_id: "2",groupChat: true,members: ["1", "2"],},
-    {avatar: ["https://www.w3schools.com/howto/img_avatar.png"],name: "John Boi",_id: "2",groupChat: true,members: ["1", "2"],},
-    {avatar: ["https://www.w3schools.com/howto/img_avatar.png"],name: "John Boi",_id: "2",groupChat: true,members: ["1", "2"],},
-   
-  ];
+   const navigate = useNavigate();
+   const dispatch = useDispatch();
+   const {  isAddedMember, isDeleteGroup, isMobile} = useSelector( state=>state.component);
+   //chatId
+   const chatId  = useSearchParams()[0].get("group");
+
+  //get my groups --api
+  const myGroups = useGetMyGroupsQuery();
+
+  //get Chat Details --api
+  const getChatDetails = useGetChatDetailsQuery({ chatId, populate: true },{skip: !chatId});
  
-  
-  const users = [
-    { name: "gagan yadav", _id: "1", groupChat: false, members: ["1","2"], avatar: "https://images.unsplash.com/photo-1726853522009-8dc4c4e306a3?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"},{ name: "aman yadav", _id: "2", groupChat: false, members: ["1","2"], avatar: "https://images.unsplash.com/photo-1726853522009-8dc4c4e306a3?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"},{ name: "deepak yadav", _id: "3", groupChat: false, members: ["1","2"], avatar: "https://images.unsplash.com/photo-1726853522009-8dc4c4e306a3?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"},{ name: "anshu yadav", _id: "4", groupChat: false, members: ["1","2"], avatar: "https://images.unsplash.com/photo-1726853522009-8dc4c4e306a3?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"},{ name: "gagan ", _id: "1", groupChat: false, members: ["1","2"], avatar: "https://images.unsplash.com/photo-1726853522009-8dc4c4e306a3?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"},{ name: "aman yadav", _id: "2", groupChat: false, members: ["1","2"], avatar: "https://images.unsplash.com/photo-1726853522009-8dc4c4e306a3?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"},{ name: "deepak yadav", _id: "3", groupChat: false, members: ["1","2"], avatar: "https://images.unsplash.com/photo-1726853522009-8dc4c4e306a3?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"},{ name: "anshu yadav", _id: "4", groupChat: false, members: ["1","2"], avatar: "https://images.unsplash.com/photo-1726853522009-8dc4c4e306a3?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"}
-]
+  //rename group --api
+  const [ renameGroup, renameGResult] = useRenameGroupMutation();
 
-
-
-
-  const navigate = useNavigate();
-  const chatId  = useSearchParams()[0].get("group");
-
-  const [ isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  //rename group --api
+  const [ removeGroupMember, removeGMResult] = useRemoveGroupMemberMutation();
 
   const [ isEdit, setIsEdit] = useState(false);
   const [ groupName, setGroupName] = useState("");
   const [ updatedGroupName, setUpdatedGroupName] = useState("");
-  const [ confirmDeleteDialog, setConfirmDeleteDialog] = useState(false);
-  //take temporarily because use after from redux
-  const isAddMember=false;
 
+  // const [ addMembers, setMembers] = useState([]);
+  
+  //back to home
   const handleBackButton = () =>{
     navigate("/");
   }
 
-  //for modile responsiveness
-  const handleMobileMenuOpen = () =>{
-    setIsMobileMenuOpen( prev=>(!prev))
-  }
+  //remove member handler
+  const removeMemberHandler = async ( id)=>{
+    
+    const toastId = toast.loading("Loading...");
+    try{
+      const result = await removeGroupMember({ chatId, userId: id});
+      if(result.data){
+        toast.success("Group Member deleted Successfully",{ id: toastId});
+      }
+      else{
+        toast.error(result.error.data.message,{ id: toastId});
+      }
+    }
+    catch(err){
+      console.log(err);
+      toast.error("Something Went wrong",{ id: toastId});
+    }
 
-  const handleMobileMenuClose = () =>{
-    setIsMobileMenuOpen( prev=>(!prev))
-  }
+  };
 
-  //delete dialog
-  const openConfirmDeleteHandler = ()=>{
-    setConfirmDeleteDialog(true);
-  }
-  const closeConfirmDeleteHandler = () =>{
-    setConfirmDeleteDialog(false);
-  }
 
-  const deleteHandler = () =>{
-    console.log("deleteHandler");
-    setConfirmDeleteDialog(false);
-  }
 
-  //add member dialog
-  const openAddMemberHandler = ()=>{
-    console.log("open");
-  }
-  const closeAddMemberHandler = ()=>{
-    console.log("close");
-  }
-
-  
-
-  //useEffect
+  // to set group name when chatId change
   useEffect(()=>{
     if(chatId){
-      setGroupName(`group Name ${chatId}`);
-      setUpdatedGroupName(`group Name ${chatId}`);
+      setGroupName( getChatDetails?.data?.chat?.name);
+      setUpdatedGroupName( getChatDetails?.data?.chat?.name);
     }
     
     //cleanUp functions
@@ -104,9 +78,41 @@ export default function Groups(){
       setUpdatedGroupName("");
       setIsEdit(false);
     }
-  }, [chatId]);
+  }, [getChatDetails]);
 
 
+  //rename group
+  const handleChangeGroupName= async ()=>{
+
+    if( !updatedGroupName.trim()){
+      return toast.error("Group Name is required");
+    }
+
+    const toastId =  toast.loading("Updating Group Name...");
+
+    try{
+      const result = await renameGroup({ name: updatedGroupName, chatId});
+      console.log(result);
+      
+      if(result.data){
+        toast.success("Group renamed Successfully",{ id: toastId});
+        setGroupName(updatedGroupName.trim());
+      }
+      else{
+        toast.error(result?.error?.data.message,{ id: toastId});
+      }
+    }
+    catch(err){
+      console.log(err);
+      toast.error("Something Went wrong",{ id: toastId});
+    }
+
+    setIsEdit(false);
+  };
+
+  console.log(removeGMResult.isLoading);
+
+//components
   const IconBtns = (
       <>
       <div style={{position:"relative"}}>
@@ -125,7 +131,7 @@ export default function Groups(){
         <Box sx={{ display:{xs:"block", sm:"none"} ,position:"fixed", right:"1rem", top:"1.5rem"}}>
             <IconButton 
             sx={{ ":hover":{color:"black", transition:"all 300ms"}}}
-            onClick={handleMobileMenuOpen}
+            onClick={ ()=>{dispatch(setIsMobile(true))} }
             >
               <Menu/>
             </IconButton>
@@ -140,15 +146,15 @@ export default function Groups(){
         isEdit
         ?
         <>
-        <TextField value={updatedGroupName} />
-        <IconButton  onClick={()=>{setIsEdit(false)}}>
+        <TextField value={updatedGroupName} onChange={(e)=>{ setUpdatedGroupName( e.target.value)}} />
+        <IconButton  onClick={ handleChangeGroupName} disabled={renameGResult.isLoading}>
           <Done/>
         </IconButton>
         </>
         :
         <>
         <Typography variant="h4">{groupName}</Typography>
-        <IconButton onClick={()=>{setIsEdit(true)}}>
+        <IconButton onClick={()=>{setIsEdit(true)}} disabled={renameGResult.isLoading}>
           <Edit/>
         </IconButton>
         </>
@@ -168,12 +174,12 @@ export default function Groups(){
           alignItems:"center"
         }}>
 
-          <Button color={"error"} onClick={openConfirmDeleteHandler} >
+          <Button color={"error"} onClick={()=>{ dispatch(setIsDeleteGroup(true))}} >
             <Delete/>
             <Typography sx={{fontWeight:"500"}}>DELETE GROUP</Typography>
           </Button>
 
-          <Button color="primary" onClick={ openAddMemberHandler} variant="contained"  sx={{margin:{xs:"1rem 0 0.6rem 0", sm:"0 0 0 1rem"}}}>
+          <Button color="primary" onClick={()=>{dispatch( setIsAddedGroup(true))}} variant="contained"  sx={{margin:{xs:"1rem 0 0.6rem 0", sm:"0 0 0 1rem"}}}>
             <Add/>
             <Typography>ADD MEMBER</Typography>
           </Button>
@@ -193,17 +199,17 @@ export default function Groups(){
                 display:{ xs:"none", sm:"block"},
               }}
         >
-          <GroupList myGroups={myGroups} chatId={chatId}/>
+          <GroupList myGroups={ myGroups?.data?.transformedGroups} chatId={chatId}/>
         </Grid>
 
         {/* for mobiles---- */}
         <Drawer 
             sx={ { display:{ xs:"block", sm:"none"}}} 
-            open={ isMobileMenuOpen} 
-            onClose={ handleMobileMenuClose} 
+            open={ isMobile} 
+            onClose={()=>{dispatch( setIsMobile(false))}} 
         >
           <div style={{ height:"100%", width:"60vw",backgroundImage: "linear-gradient(to top, #fbc2eb 0%, #a6c1ee 100%)" }}>
-            <GroupList myGroups={myGroups} chatId={chatId} />
+            <GroupList myGroups={ myGroups?.data?.transformedGroups} chatId={chatId} />
           </div>
         </Drawer>
 
@@ -214,12 +220,12 @@ export default function Groups(){
           { IconBtns}
           
           {/* groupName with update */}
-          { groupName && GroupName}
+          { getChatDetails?.data?.chat && GroupName}
 
           {/* members */}
-          { groupName && <Typography variant="h6" sx={{margin:{xs:"1.5rem 0 1rem 2rem", sm:"1rem 0 0.6rem 7rem"}}}>Members</Typography> } 
+          { getChatDetails?.data?.chat && <Typography variant="h6" sx={{margin:{xs:"1.5rem 0 1rem 2rem", sm:"1rem 0 0.6rem 7rem"}}}>Members</Typography> } 
           {
-            groupName &&
+            getChatDetails?.data?.chat &&
             <Box 
               sx={{
                 height:"45vh",
@@ -228,26 +234,26 @@ export default function Groups(){
                 padding:{ xs:"0.5rem 2rem 0 2rem", sm:"2rem 7rem"},
               }}
           >
+            {/* chat members */}
             <Box > 
               {
-                users.length>0 && users.map((user)=>{
-                  return <UserItem user={user} styling={{ borderRadius:"10px", margin:"0 0 30px 0", boxShadow:"0 0 8px -1px gray" }}/>
+                getChatDetails?.data?.chat?.members.length  >0 && getChatDetails?.data?.chat?.members.map((user)=>{
+                  return <UserItem user={ user} handler={ removeMemberHandler} handlerIsLoading={ removeGMResult.isLoading} isAdded={true} styling={{ borderRadius:"10px", margin:"0 0 30px 0", boxShadow:"0 0 8px -1px gray" }}/>
                 })
               }
-              
             </Box>
           </Box>
           }
 
           {/* to add and delete the members */}
-          { groupName && ButtonGroup}
+          { getChatDetails?.data?.chat && ButtonGroup}
         </Grid>
 
       </Grid>
 
       {/*Dialogs for delete and add members */}
       {
-        isAddMember &&  (
+        isAddedMember &&  (
           <Suspense fallback={<Backdrop open />}>
              <AddMemberDialog/>
           </Suspense>
@@ -255,13 +261,9 @@ export default function Groups(){
       }
 
       {
-        confirmDeleteDialog && (
+        isDeleteGroup && (
           <Suspense fallback={<Backdrop open />}>
-             <ConfirmDeleteDialog
-                  open={ confirmDeleteDialog}
-                  handleClose={ closeConfirmDeleteHandler}
-                  deleteHandler={ deleteHandler}
-              />
+             <ConfirmDeleteDialog/>
           </Suspense>
         )
       }
@@ -272,13 +274,14 @@ export default function Groups(){
 
 const GroupList = ( { w="100%", myGroups, chatId}) =>{
 
+  
   return (
     <div style={{ backgroundImage: "linear-gradient(to top, #fbc2eb 0%, #a6c1ee 100%)"  }}>
       {
-        myGroups.length > 0 
+         myGroups?.length > 0 
         ?
         <div style={{height:"100vh", overflow:"auto"}}> 
-           {myGroups.map( ( group, idx)=>{
+           { myGroups.map( ( group, idx)=>{
               return(
                   <GroupListItem key={idx} chatId={ chatId} group={group} />
                 )
@@ -297,13 +300,15 @@ const GroupListItem =  memo( ({ group, chatId}) =>{
   const { name, avatar, _id} = group;
 
   return (
-    <Box sx={{padding:"0.7rem", boxSizing:"border-box", "&:hover":{backgroundColor:"rgba(14, 13, 13, 0.363)"}}}>
-      <Link to={`?group=${_id}`} onClick={ (e)=>{ if(chatId===_id){ e.preventDefault(); }}} style={{textDecoration:"none"}}>
+    <Link to={`?group=${_id}`} onClick={ (e)=>{ if(chatId===_id){ e.preventDefault(); }}} style={{textDecoration:"none"}}>
+      <Box sx={{padding:"0.7rem", boxSizing:"border-box", "&:hover":{backgroundColor:"rgba(14, 13, 13, 0.363)"}}}>
+      
         <Box sx={{display:"flex", justifyContent:"start", alignItems:"center"}}>
             <Avatar src={avatar} />
             <Typography sx={{color:"black", marginLeft:"1rem"}}>{name}</Typography>
         </Box>
-      </Link>
-    </Box>
+      
+      </Box>
+    </Link>
   )
 })

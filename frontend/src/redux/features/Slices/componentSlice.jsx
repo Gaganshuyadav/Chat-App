@@ -7,6 +7,9 @@ const componentSlice = createSlice({
         isSearch: false,
         isNotification: false,
         isFileMenu: false,
+        isNewGroup: false,
+        isAddedMember: false,
+        isDeleteGroup: false,
     },
     reducers:{
         setIsMobile : ( state, action)=>{
@@ -21,11 +24,20 @@ const componentSlice = createSlice({
         setIsFileMenu: ( state, action)=>{
             state.isFileMenu = action.payload;
         },
+        setIsNewGroup: ( state, action)=>{
+            state.isNewGroup = action.payload;
+        },
+        setIsAddedGroup: ( state, action)=>{
+            state.isAddedMember = action.payload;
+        },
+        setIsDeleteGroup: ( state, action)=>{
+            state.isDeleteGroup = action.payload;
+        }
     },
 
 });
 
-export const { setIsMobile, setIsSearch, setIsNotification, setIsFileMenu} = componentSlice.actions;
+export const { setIsMobile, setIsSearch, setIsNotification, setIsFileMenu, setIsNewGroup, setIsAddedGroup, setIsDeleteGroup } = componentSlice.actions;
 export default componentSlice.reducer;
 
 

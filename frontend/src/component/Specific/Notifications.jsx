@@ -46,7 +46,7 @@ const Notifications = () => {
     }
   }
 
-  console.log(data);
+  
 
 
   return (

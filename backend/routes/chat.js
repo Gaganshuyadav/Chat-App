@@ -4,7 +4,7 @@ const router = express.Router();
 import { newGroupChat, getMyChats, getMyGroups, addMembers, removeMembers, leaveGroup, sendAttachments, getChatDetails, renameGroup, deleteChat, getMessages } from "../controllers/chat.js";
 import { isAuthenticated} from "../middlewares/auth.js";
 import { multerUpload } from "../middlewares/multer.js";
-import { validateHandler, newGroupValidator, addMembersInGroupValidator, removeMembersValidator, sendAttachmentsValidator, chatIdValidator } from "../middlewares/validators.js";
+import { validateHandler, newGroupValidator, addMembersInGroupValidator, removeMembersValidator, sendAttachmentsValidator, chatIdValidator, nameCheckValidator } from "../middlewares/validators.js";
 
 //authentication checked before routes
 router.use( isAuthenticated);
@@ -33,7 +33,7 @@ router.get("/message/:id", chatIdValidator(), validateHandler, getMessages);
 //get chatdetails, rename, delete
 router.route("/:id")
                 .get( chatIdValidator(), validateHandler, getChatDetails)
-                .put( chatIdValidator(), validateHandler, renameGroup)
+                .put( chatIdValidator(), nameCheckValidator(), validateHandler, renameGroup)
                 .delete( chatIdValidator(), validateHandler, deleteChat);
 
 export default router;
