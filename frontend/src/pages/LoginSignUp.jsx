@@ -90,11 +90,11 @@ export default function Login(){
 
     useEffect(()=>{
       if(error){
-        toast.error(error); 
+        // toast.error(error); 
         dispatch(clearError());
       }
       if(success){
-        toast.success("User Login Successfully");
+        // toast.success("User Login Successfully");
         dispatch( clearSuccess());
       }
     
@@ -129,11 +129,11 @@ export default function Login(){
                     <button><Typography>LOGIN</Typography></button>
                 </form>
 
-                <Typography>OR</Typography>
+                <Typography style={{fontSize:"17px"}} >OR</Typography>
 
                 <div className="toggleLogin">
                     <div>Don't have an account?</div>
-                    <button onClick={ ()=>{ setLoginToggle(false)} }>Sign up</button>
+                    <button onClick={ ()=>{ setLoginToggle(false)} }   style={{fontSize:"17px"}}>Sign up</button>
                 </div>
               </Paper>
             </Grid>
@@ -179,11 +179,11 @@ export default function Login(){
                     <button><Typography>SIGN UP</Typography></button>
                 </form>
 
-                <Typography sx={{textAlign:"center"}}>OR</Typography>
+                <Typography style={{textAlign:"center",fontSize:"17px"}}>OR</Typography>
 
                 <div className="toggleSignup">
                     <div>Already have an account?</div>
-                    <button onClick={ ()=>{ setLoginToggle(true)}} >Login</button>
+                    <button onClick={ ()=>{ setLoginToggle(true)}} style={{fontSize:"17px"}}>Login</button>
                 </div>
               </Paper>
             </Grid>

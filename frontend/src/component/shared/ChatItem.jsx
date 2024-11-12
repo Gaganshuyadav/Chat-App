@@ -3,6 +3,7 @@ import { AvatarGroup, Box, Avatar, Typography} from "@mui/material";
 import { Link, useParams} from "react-router-dom";
 import { useSelector, useDispatch} from "react-redux";
 import { removeMessagesAlert } from "../../redux/features/Slices/notifySlice";
+import { setCurrentChat } from "../../redux/features/Slices/chatSlice";
 
 const ChatItem = ( { chat, idx}) => {
 
@@ -15,10 +16,17 @@ const ChatItem = ( { chat, idx}) => {
     dispatch( removeMessagesAlert( params.chatId));
   }
 
+
+  //set current chat id with information, so that user can delete or leave the group
+  if(params.chatId===chat._id){
+    dispatch( setCurrentChat(chat));
+  }
+
   return (
     <Link 
         to={`/chat/${chat._id}`} 
-        style={{textDecoration:"none", color:"black", }}
+        style={{textDecoration:"none", color:"black"}}
+        onContextMenu={(e)=>{e.preventDefault()}}
     >
       <Box 
           sx={{ 
@@ -42,9 +50,9 @@ const ChatItem = ( { chat, idx}) => {
         </Box> 
 
         {/* username and alert box */}
-        <Box sx={{border:"1px solid blue"}}>
-            <Typography sx={{  border:"1px solid red",marginLeft:"19px", fontSize:"17px", fontWeight:"500"}}>{ chat.name}</Typography>
-            <Typography sx={{  border:"1px solid red",marginLeft:"19px", fontSize:"14px", color:"green"}}>
+        <Box >
+            <Typography sx={{  marginLeft:"19px", fontSize:"17px", fontWeight:"500"}}>{ chat.name}</Typography>
+            <Typography sx={{  marginLeft:"19px", fontSize:"14px", color:"green"}}>
               { newMessagesAlert && newMessagesAlert.find((alert,idx)=>{ 
                    return alert.chatId === chat._id;
                 })

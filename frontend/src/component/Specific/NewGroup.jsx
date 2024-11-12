@@ -49,6 +49,7 @@ const NewGroup = () => {
     //members length
     if( selectedMembers.length < 2 ){
       toast.error("Please Select at least 2 members");
+      dispatch( setIsNewGroup( false));
       return;
     }
 
@@ -57,17 +58,18 @@ const NewGroup = () => {
       const result = await makeNewGroup({ name: groupName, members: selectedMembers});
       if(result.data){
         toast.success(result.data.message,{ id: toastId});
+        dispatch( setIsNewGroup( false));
       }
       else{
         toast.error(result.error.data.message ||"Something went wrong", { id: toastId});
+        dispatch( setIsNewGroup( false));
       }
     }
     catch(err){
-      console.log(err);
       toast.dismiss();
+      dispatch( setIsNewGroup( false));
     }
 
-    // dispatch( setIsNewGroup( false));
   };
 
 
@@ -77,7 +79,7 @@ const NewGroup = () => {
   useEffect(()=>{
 
     if(getMyFriends.isError){
-      toast.error( getMyFriends?.error?.message || "Something went wrong");
+      toast.error( getMyFriends?.error?.data?.message || "Something went wrong");
     }
 
   },[getMyFriends]);

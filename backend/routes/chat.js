@@ -1,7 +1,7 @@
 import express from "express";
 const router = express.Router();
 
-import { newGroupChat, getMyChats, getMyGroups, addMembers, removeMembers, leaveGroup, sendAttachments, getChatDetails, renameGroup, deleteChat, getMessages } from "../controllers/chat.js";
+import { newGroupChat, getMyChats, getMyGroups, addMembers, removeMembers, leaveGroup, sendAttachments, getChatDetails, renameGroup, deleteChat, getMessages, deleteChatMessages } from "../controllers/chat.js";
 import { isAuthenticated} from "../middlewares/auth.js";
 import { multerUpload } from "../middlewares/multer.js";
 import { validateHandler, newGroupValidator, addMembersInGroupValidator, removeMembersValidator, sendAttachmentsValidator, chatIdValidator, nameCheckValidator } from "../middlewares/validators.js";
@@ -35,6 +35,10 @@ router.route("/:id")
                 .get( chatIdValidator(), validateHandler, getChatDetails)
                 .put( chatIdValidator(), nameCheckValidator(), validateHandler, renameGroup)
                 .delete( chatIdValidator(), validateHandler, deleteChat);
+
+//delete messages
+router.delete("/message/del/:id", chatIdValidator(), validateHandler, deleteChatMessages);
+
 
 export default router;
 

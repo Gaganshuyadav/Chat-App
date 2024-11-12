@@ -13,7 +13,7 @@ import { getSocket } from "../../socket.jsx";
 
 //-----
 import { useMyChatsQuery} from "../../redux/api/api.jsx";
-import { NEW_MESSAGE_ALERT, NEW_REQUEST } from "../../lib/events.jsx";
+import { ALERT, NEW_MESSAGE_ALERT, NEW_REQUEST, REFETCH_CHATS } from "../../lib/events.jsx";
 
 
 const AppLayout = () => (WrappedComponent) =>{ 
@@ -23,6 +23,7 @@ const AppLayout = () => (WrappedComponent) =>{
         
         const dispatch = useDispatch();
         const { isMobile} = useSelector(state=>state.component);
+        const { user} = useSelector( state=>state.user);
 
         const { isLoading, isError, isSuccess, data, error, refetch} = useMyChatsQuery("");
 
@@ -53,7 +54,48 @@ const AppLayout = () => (WrappedComponent) =>{
             return ()=>{
                 socket.off( NEW_MESSAGE_ALERT,messageAlertEvent);
             }
-        })
+        },[socket]);
+
+
+        //refetch chats when friend request accept
+        const refetchChats = ( data)=>{
+            refetch();
+        }
+        useEffect(()=>{
+            socket.on( REFETCH_CHATS, refetchChats);
+
+            return ()=>{
+                socket.off(REFETCH_CHATS, refetchChats);
+            }
+        },[socket]);
+
+
+        //alert when new Group created
+        const alert = ( data)=>{
+            if( data.type && data.type==="newGroup" && data.creator && data?.creator!== user?._id){
+                toast.success(data.message);
+            }
+            if(data.type && data.type==="addMembers"){
+                toast.success(data.message);
+            }
+            if(data.type && data.type==="removeMembers"){
+                toast.success(data.message);
+            }
+            if(data.type && data.user!==user._id && data.type==="leaveChat"){
+                toast.success(data.message);
+            }
+            if(data.type && data.creator!==user._id && data.type==="deleteGroup"){
+                toast.success(data.message);
+            }
+            
+        };
+        useEffect(()=>{
+            socket.on( ALERT, alert);
+
+            return ()=>{
+                socket.off( ALERT, alert);
+            }
+        },[socket]);
         
 
         //for errors 
@@ -86,7 +128,7 @@ const AppLayout = () => (WrappedComponent) =>{
 
                     {/* for phones in XS */}
                     <Drawer open={ isMobile} sx={{display:{xs:"block",sm:"none"}}} onClose={()=>{dispatch( setIsMobile(false))}}>
-                        <ChatList chats={ data?.chats}/>
+                        <ChatList chats={ data?.chats} />
                         
                     </Drawer>
 
@@ -97,7 +139,7 @@ const AppLayout = () => (WrappedComponent) =>{
 
                     {/* wrapped components */}
                     <Grid  
-                        size={{ xs:12, sm:8 ,md:4 , lg:6 }}
+                        size={{ xs:12, sm:8 ,md:6 , lg:6 }}
                         style={{
                             backgroundColor:"rgb(238, 228, 226)",
                             color:"white",
@@ -112,7 +154,7 @@ const AppLayout = () => (WrappedComponent) =>{
 
                     {/* Profile */}
                     <Grid  
-                        size={{ xs:0,sm:0,md:4, lg:3 }}
+                        size={{ xs:0,sm:0,md:2, lg:3 }}
                         sx={{
                             backgroundColor:"rgb(37, 37, 37)",
                             display:{xs:"none",sm:"none", md:"block"},

@@ -62,7 +62,7 @@ const SearchDialog = () => {
 
       searchUser( search)
       .then(( result)=>{
-        setUsers(result.data.users);
+        setUsers(result?.data?.users);
         setIsLoading(result.isLoading);
         
       })

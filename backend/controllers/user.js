@@ -156,7 +156,13 @@ const sendFriendRequest = catchAsyncErrors( async( req, res, next)=>{
     });
 
     if(request){
-        return next( new errorHandler("Request already Sent", 409));
+        //send request
+        if(request.sender.toString()===req.user._id.toString()){
+            return next( new errorHandler("Request already Sent", 409));
+        }
+        else{
+            return next( new errorHandler("You received a Friend Request!! Check Notifications"));
+        }
     }
 
     const newRequest = await Request.create({
@@ -216,22 +222,21 @@ const acceptFriendRequest = catchAsyncErrors( async( req, res, next)=>{
         ] 
         )
 
-    emitEvent( req, REFETCH_CHATS, members);
-
 
     res.status(200).json({
         success: true,
         message: "Friend Request Accepted",
         senderId: request.sender._id,
     })
+
+    //refetch chats
+    emitEvent( req, REFETCH_CHATS, members, "refetch all chats");
         
 })
 
 const getAllNotifications = catchAsyncErrors( async( req, res, next)=>{
 
     const requests = await Request.find({ receiver: req.user._id}).populate("sender","name avatar");
-console.log(requests)
-console.log(req.user)
    
     if(!requests){
         return next(new errorHandler("Request not found", 404));
@@ -256,7 +261,7 @@ const getMyFriends = catchAsyncErrors( async( req, res ,next)=>{
 
     const { chatId} = req.query;
 
-    //if we want all friends( without ChatId)
+    //if we want all friends who are not in any chat( groupChat: false)
     const allMyFriendsChats = await Chat.find({ groupChat:false , members: req.user._id}).populate("members", "name avatar");
 
     const allMyFriends = allMyFriendsChats.map((friend)=>{
@@ -270,16 +275,17 @@ const getMyFriends = catchAsyncErrors( async( req, res ,next)=>{
             avatar: otherUser[0].avatar.url
         }
     })
+    
 
-
-    //if we want all friends( with ChatId or available friends)
+    //if groupChat: false and also chatId given
     if(chatId){
 
         const chat = await Chat.findById(chatId);
     
         const availableFriends = allMyFriends.filter( (friend)=>{
-            return !chat.members.includes(friend);
+            return !chat.members.includes(friend._id);
         })
+
 
         return res.status(200).json({
             success: true,

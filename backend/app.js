@@ -88,29 +88,36 @@ io.on( "connection", ( socket)=>{
      //set active users
      userSocketIDs.set( socket.user._id.toString(), socket.id);
 
-    
-     userSocketIDs.forEach(( key, value)=>{
-        // console.log(value, " ==", key);
-     })
 
     // (1).new Message
     socket.on( NEW_MESSAGE, async ( { chatId, members, message})=>{
 
+
+        const messageForDB = {
+            content: message,
+            sender: socket.user._id,
+            chat: chatId,
+        };
+
+         //save message in database
+         let messageFromDB;
+         try{
+            messageFromDB = await Message.create(messageForDB);
+        }
+        catch(err){
+            console.log(err);
+        }
+
+        //message for real time
         const messageForRealTime = {
             content: message,
-            _id: uuid(),
+            _id: messageFromDB._id,
             sender:{
                 _id: socket.user._id,
                 name: socket.user.name,
             },
             chat: chatId,
             createdAt: new Date().toISOString(),
-        };
-
-        const messageForDB = {
-            content: message,
-            sender: socket.user._id,
-            chat: chatId,
         };
 
          //get socket IDs for each member
@@ -122,13 +129,6 @@ io.on( "connection", ( socket)=>{
              message: messageForRealTime,
          })
 
-         //save message in database
-        try{
-            await Message.create(messageForDB);
-        }
-        catch(err){
-            console.log(err);
-        }
         
         // (2). message alert for members
         io.to(membersSocket).emit(NEW_MESSAGE_ALERT, { chatId});

@@ -1,5 +1,5 @@
 import { lazy, Suspense, useState, useEffect} from 'react';
-import { useNavigate} from "react-router-dom"; 
+import { useNavigate, useParams} from "react-router-dom"; 
 /*mui icons */
 import MenuIcon from '@mui/icons-material/Menu';
 import SearchIcon from '@mui/icons-material/Search';
@@ -8,8 +8,9 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import AddIcon from '@mui/icons-material/Add';
 import ProfileIcon from "@mui/icons-material/AccountCircle";
+import MoreOption from "@mui/icons-material/MoreVert";
 /*mui components */
-import { IconButton, Tooltip, Typography, Backdrop, Badge } from "@mui/material";
+import { IconButton, Tooltip, Typography, Backdrop, Badge, Box } from "@mui/material";
 //dialogs
 const Notifications = lazy( ()=> import("../Specific/Notifications.jsx"));
 const NewGroup = lazy(()=>import("../Specific/NewGroup.jsx"));
@@ -19,18 +20,22 @@ import { useDispatch, useSelector} from "react-redux";
 import { logout} from "../../redux/features/thunks/user.jsx";
 import { clearError, clearSuccess} from "../../redux/features/Slices/userSlice.jsx";
 import { toast} from "react-hot-toast";
-import { setIsMobile, setIsSearch, setIsNotification, setIsNewGroup} from "../../redux/features/Slices/componentSlice.jsx";
-import { resetNotificationCount     } from '../../redux/features/Slices/notifySlice.jsx';
+import { setIsMobile, setIsSearch, setIsNotification, setIsNewGroup,  setIsContextMenuDeleteChatDialog, setIsConfirmationDialog, setIsUserLogoutConfirmation} from "../../redux/features/Slices/componentSlice.jsx";
+import { resetNotificationCount } from '../../redux/features/Slices/notifySlice.jsx';
+//leave or delete chat
+import DeleteChatMenu from '../dialogs/DeleteChatMenu.jsx';
+import UserLogoutConfirmation from '../dialogs/UserLogoutConfirmation.jsx';
 
 const Header = () => {
 
     const navigate = useNavigate();
     const dispatch = useDispatch();
-    const { isMobile, isSearch, isNotification, isNewGroup} = useSelector( state=>state.component);
+    const params = useParams();
+    const { isMobile, isSearch, isNotification, isNewGroup, isContextMenuDeleteChatDialog} = useSelector( state=>state.component);
     const { isLogin, success, error, isLoading} = useSelector( state=>state.user);
     const { user} = useSelector( state=> state.user);
     const { notificationCount} = useSelector( state=> state.notify);
-
+    const [ anchorEl, setAnchorEl] = useState(null);
 
     const handleManageGroups = () =>{
         navigate("/groups");
@@ -38,6 +43,7 @@ const Header = () => {
 
     const handleLogout = () =>{
         dispatch( logout());
+        dispatch(setIsUserLogoutConfirmation(false));
     }
 
     const handleMenu = () =>{
@@ -55,20 +61,31 @@ const Header = () => {
     const openCreateNewGroup = () =>{
         dispatch( setIsNewGroup(true));
     }
+
+    //delete chat and leave group( three dots for more options)
+    const handleDeleteChatOrLeaveGroup = ( e)=>{
+        setAnchorEl(e.currentTarget);
+        dispatch( setIsContextMenuDeleteChatDialog(true));
+
+    };
    
 
     //if not logged in redirect to login page
+    useEffect(()=>{
     if(!isLogin){
         navigate("/login");
     }
 
+    },[isLogin]);
+   
+
     useEffect(()=>{
-        // if(success){
-        //     toast.success("User Logout Successfully");
-        //     dispatch( clearSuccess());
-        // }
+        if(success){
+            // toast.success("User Logout Successfully");
+            dispatch( clearSuccess());
+        }
         if(error){
-            toast.error(error);
+            // toast.error(error);
             dispatch( clearError());
         }
     }, [success,error]);
@@ -106,9 +123,9 @@ const Header = () => {
             </div>
     
             <div className="rightHeader">
-                <Tooltip sx={{ display:{sm:"none"},}} title={"Profile"} placement="bottom">  
-                    <IconButton sx={{ display:{ sm:"none"},}} onClick={()=>{ navigate("/profile")}}>
-                        <ProfileIcon sx={{ display:{xs:"inline-flex",sm:"none"},color:"rgb(243, 243, 243)",}}/>
+                <Tooltip sx={{ display:{md:"none"},}} title={"Profile"} placement="bottom">  
+                    <IconButton sx={{ display:{ md:"none"},}} onClick={()=>{ navigate("/profile")}}>
+                        <ProfileIcon sx={{ display:{xs:"inline-flex",md:"none"},color:"rgb(243, 243, 243)",}}/>
                     </IconButton> 
                 </Tooltip>
 
@@ -116,7 +133,26 @@ const Header = () => {
                 <IconBtn Title={"New Group"} icon={<AddIcon/>} onClick={  openCreateNewGroup}/>
                 <IconBtn Title={"Manage Groups"} icon={<GroupsIcon/>} onClick={ handleManageGroups}/>
                 <IconBtn Title={"Notifications"} icon={<NotificationsIcon/>} onClick={openNotification} count={ notificationCount} />
-                <IconBtn Title={"Logout"} icon={<LogoutIcon/>} onClick={ handleLogout}/>
+                
+                <IconBtn Title={"Logout"} icon={<LogoutIcon/>} onClick={()=>{dispatch(setIsUserLogoutConfirmation(true))}}/>
+                <UserLogoutConfirmation handler={handleLogout} loading={isLoading}/>
+                
+                
+                {/* menu for delete or leave chat , and show only if chatId is their*/}
+                {
+                    params.chatId &&  (
+                        <>
+                        <Tooltip title={"More Options"} placement="bottom">  
+                           <IconButton onClick={ handleDeleteChatOrLeaveGroup}>
+                              <MoreOption sx={{ color:"rgb(243, 243, 243)"}}/>
+                            </IconButton> 
+                        </Tooltip>
+                        <DeleteChatMenu anchorEl={anchorEl}  />
+                        </>  
+                    )  
+                }
+                          
+            
             </div>
         </div>
 

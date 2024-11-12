@@ -7,7 +7,7 @@ import { IconButton, Box, Tooltip, Drawer, Typography, Avatar, AvatarGroup, Text
 const ConfirmDeleteDialog = lazy(()=>import("../component/dialogs/ConfirmDeleteDialog"));
 const AddMemberDialog = lazy(()=>import("../component/dialogs/AddMemberDialog"));
 import { getSocket} from "../socket";
-import { useGetChatDetailsQuery, useGetMyGroupsQuery, useRemoveGroupMemberMutation, useRenameGroupMutation } from '../redux/api/api';
+import { useAddGroupMembersMutation, useGetChatDetailsQuery, useGetMyGroupsQuery, useRemoveGroupMemberMutation, useRenameGroupMutation } from '../redux/api/api';
 import { toast} from "react-hot-toast";
 import { useDispatch, useSelector} from "react-redux";
 import { setIsAddedGroup, setIsDeleteGroup, setIsMobile } from '../redux/features/Slices/componentSlice';
@@ -16,6 +16,7 @@ export default function Groups(){
 
    const navigate = useNavigate();
    const dispatch = useDispatch();
+   const { user} = useSelector( state => state.user );
    const {  isAddedMember, isDeleteGroup, isMobile} = useSelector( state=>state.component);
    //chatId
    const chatId  = useSearchParams()[0].get("group");
@@ -29,21 +30,20 @@ export default function Groups(){
   //rename group --api
   const [ renameGroup, renameGResult] = useRenameGroupMutation();
 
-  //rename group --api
+  //remove group members --api
   const [ removeGroupMember, removeGMResult] = useRemoveGroupMemberMutation();
 
   const [ isEdit, setIsEdit] = useState(false);
   const [ groupName, setGroupName] = useState("");
   const [ updatedGroupName, setUpdatedGroupName] = useState("");
-
-  // const [ addMembers, setMembers] = useState([]);
   
   //back to home
   const handleBackButton = () =>{
     navigate("/");
   }
 
-  //remove member handler
+
+  //remove member handler-api
   const removeMemberHandler = async ( id)=>{
     
     const toastId = toast.loading("Loading...");
@@ -51,7 +51,12 @@ export default function Groups(){
       const result = await removeGroupMember({ chatId, userId: id});
       if(result.data){
         toast.success("Group Member deleted Successfully",{ id: toastId});
-      }
+
+            //if admin delete themselves 
+            if(user._id.toString() === id){
+                navigate("/groups");
+            }
+        }
       else{
         toast.error(result.error.data.message,{ id: toastId});
       }
@@ -65,6 +70,37 @@ export default function Groups(){
 
 
 
+
+  //rename group-api
+  const handleChangeGroupName= async ()=>{
+
+    if( !updatedGroupName.trim()){
+      return toast.error("Group Name is required");
+    }
+
+    const toastId =  toast.loading("Updating Group Name...");
+
+    try{
+      const result = await renameGroup({ name: updatedGroupName, chatId});
+      
+      
+      if(result.data){
+        toast.success("Group renamed Successfully",{ id: toastId});
+        setGroupName(updatedGroupName.trim());
+      }
+      else{
+        toast.error(result?.error?.data.message,{ id: toastId});
+      }
+    }
+    catch(err){
+      toast.error("Something Went wrong",{ id: toastId});
+    }
+
+    setIsEdit(false);
+  };
+
+
+  
   // to set group name when chatId change
   useEffect(()=>{
     if(chatId){
@@ -77,40 +113,11 @@ export default function Groups(){
       setGroupName("");
       setUpdatedGroupName("");
       setIsEdit(false);
+      
     }
   }, [getChatDetails]);
 
 
-  //rename group
-  const handleChangeGroupName= async ()=>{
-
-    if( !updatedGroupName.trim()){
-      return toast.error("Group Name is required");
-    }
-
-    const toastId =  toast.loading("Updating Group Name...");
-
-    try{
-      const result = await renameGroup({ name: updatedGroupName, chatId});
-      console.log(result);
-      
-      if(result.data){
-        toast.success("Group renamed Successfully",{ id: toastId});
-        setGroupName(updatedGroupName.trim());
-      }
-      else{
-        toast.error(result?.error?.data.message,{ id: toastId});
-      }
-    }
-    catch(err){
-      console.log(err);
-      toast.error("Something Went wrong",{ id: toastId});
-    }
-
-    setIsEdit(false);
-  };
-
-  console.log(removeGMResult.isLoading);
 
 //components
   const IconBtns = (
@@ -220,12 +227,12 @@ export default function Groups(){
           { IconBtns}
           
           {/* groupName with update */}
-          { getChatDetails?.data?.chat && GroupName}
+          { getChatDetails?.currentData?.chat && GroupName}
 
           {/* members */}
-          { getChatDetails?.data?.chat && <Typography variant="h6" sx={{margin:{xs:"1.5rem 0 1rem 2rem", sm:"1rem 0 0.6rem 7rem"}}}>Members</Typography> } 
+          { getChatDetails?.currentData?.chat && <Typography variant="h6" sx={{margin:{xs:"1.5rem 0 1rem 2rem", sm:"1rem 0 0.6rem 7rem"}}}>Members</Typography> } 
           {
-            getChatDetails?.data?.chat &&
+            getChatDetails?.currentData?.chat &&
             <Box 
               sx={{
                 height:"45vh",
@@ -237,7 +244,7 @@ export default function Groups(){
             {/* chat members */}
             <Box > 
               {
-                getChatDetails?.data?.chat?.members.length  >0 && getChatDetails?.data?.chat?.members.map((user)=>{
+                getChatDetails?.currentData?.chat?.members.length  >0 && getChatDetails?.data?.chat?.members.map((user)=>{
                   return <UserItem user={ user} handler={ removeMemberHandler} handlerIsLoading={ removeGMResult.isLoading} isAdded={true} styling={{ borderRadius:"10px", margin:"0 0 30px 0", boxShadow:"0 0 8px -1px gray" }}/>
                 })
               }
@@ -246,7 +253,7 @@ export default function Groups(){
           }
 
           {/* to add and delete the members */}
-          { getChatDetails?.data?.chat && ButtonGroup}
+          { getChatDetails?.currentData?.chat && ButtonGroup}
         </Grid>
 
       </Grid>
@@ -255,15 +262,15 @@ export default function Groups(){
       {
         isAddedMember &&  (
           <Suspense fallback={<Backdrop open />}>
-             <AddMemberDialog/>
+             <AddMemberDialog chatId={chatId}/>
           </Suspense>
         )
       }
-
+ {/* //addMember, isLoadingAddMember, chatId */}
       {
         isDeleteGroup && (
           <Suspense fallback={<Backdrop open />}>
-             <ConfirmDeleteDialog/>
+             <ConfirmDeleteDialog chatId={chatId}/>
           </Suspense>
         )
       }
@@ -301,11 +308,20 @@ const GroupListItem =  memo( ({ group, chatId}) =>{
 
   return (
     <Link to={`?group=${_id}`} onClick={ (e)=>{ if(chatId===_id){ e.preventDefault(); }}} style={{textDecoration:"none"}}>
-      <Box sx={{padding:"0.7rem", boxSizing:"border-box", "&:hover":{backgroundColor:"rgba(14, 13, 13, 0.363)"}}}>
+      <Box sx={{padding:"0.7rem", boxSizing:"border-box", backgroundColor:chatId===_id ? "black": "none", "&:hover":{backgroundColor: chatId===_id ? "black" : "rgba(14, 13, 13, 0.363)"}}}>
       
         <Box sx={{display:"flex", justifyContent:"start", alignItems:"center"}}>
-            <Avatar src={avatar} />
-            <Typography sx={{color:"black", marginLeft:"1rem"}}>{name}</Typography>
+            
+              <AvatarGroup max={3} sx={{"& .MuiAvatar-root":{marginLeft:"-32px"}, marginLeft:"13px"}}>
+                {
+                  avatar?.map((avtr,i)=>{
+                    return <Avatar  key={i} src={ avtr} sx={{width:"45px", height:"45px"}} />
+                  })
+                }
+              </AvatarGroup>
+            
+            
+            <Typography sx={{color: chatId===_id ? "white": "black", marginLeft:"1rem"}}>{name}</Typography>
         </Box>
       
       </Box>

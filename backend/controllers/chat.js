@@ -1,9 +1,9 @@
 import { Chat} from "../models/chat.js";
 import { User} from "../models/user.js";
 import { Message} from "../models/message.js";
-import { errorHandler, catchAsyncErrors} from "../middlewares/error.js"; 
+import { errorHandler, catchAsyncErrors } from "../middlewares/error.js"; 
 import  { emitEvent} from "../utils/features.js";
-import { ALERT, REFETCH_CHATS, NEW_MESSAGE, NEW_MESSAGE_ALERT } from "../constants/events.js";
+import { ALERT, REFETCH_CHATS, NEW_MESSAGE, NEW_MESSAGE_ALERT, DELETE_MESSAGES_ALERT, DELETE_ALL_MESSAGES_ALERT } from "../constants/events.js";
 import { v2 as cloudinary} from "cloudinary";  
 import { getSockets } from "../lib/helper.js";
 import { v4 as uuid} from "uuid";
@@ -26,8 +26,8 @@ const newGroupChat = catchAsyncErrors( async ( req, res, next)=>{
         creator: req.user._id
     })
 
-    emitEvent( req, ALERT, allMembers, `Welcome to ${name} group`);
-    emitEvent( req, REFETCH_CHATS, members);
+    emitEvent( req, ALERT, allMembers, { type:"newGroup", creator: req.user._id, message: `Welcome to ${name} group` } );
+    emitEvent( req, REFETCH_CHATS, members, "refetch");
 
     res.status(201).json({
         success:true,
@@ -45,6 +45,8 @@ const getMyChats = catchAsyncErrors( async ( req, res, next)=>{
         return {
             _id: chat._id,
             name: chat.name,
+            creator: chat.creator,
+            groupChat: chat.groupChat,
             members: chat.members.reduce(( prev, curr)=>{
                 if( curr._id.toString() !== req.user._id.toString()){
                     prev.push(curr._id);
@@ -106,9 +108,9 @@ const addMembers = catchAsyncErrors( async( req, res, next)=>{
     const { chatId, members} = req.body;
 
 
-    // if(!members || members.length<1){
-    //     return next( new errorHandler("Please provide members", 400));
-    // }
+    if(!members || members.length<1){
+        return next( new errorHandler("Please provide members", 400));
+    }
 
     //find chat using chatId
     const chat = await Chat.findById( chatId);
@@ -148,8 +150,8 @@ const addMembers = catchAsyncErrors( async( req, res, next)=>{
 
     const allNewMembersNames = allNewMembers.map( ( member)=>{ return member.name}).join(", "); 
 
-    emitEvent( req, ALERT, chat.members , `${allNewMembersNames} has been added in the group`);
-    emitEvent( req, REFETCH_CHATS, chat.members);
+    emitEvent( req, ALERT, chat.members ,{ type:"addMembers", message: `${req.user.name} added ${allNewMembersNames} in ${chat.name} group`});
+    emitEvent( req, REFETCH_CHATS, chat.members, "refetch");
     
     res.status(201).json({ 
         success: true,
@@ -192,8 +194,8 @@ const removeMembers = catchAsyncErrors( async( req, res, next)=>{
     //save in mongo
     await chat.save();
 
-    emitEvent( req, ALERT, chat.members, `${userThatWillBeRemoved} has been removed from the group`);
-    emitEvent( req, REFETCH_CHATS, chat.members)
+    emitEvent( req, ALERT, chat.members, { type:"removeMembers", message: `${userThatWillBeRemoved.name} has been removed from the ${chat.name} group`});
+    emitEvent( req, REFETCH_CHATS, chat.members, "refetch")
 
     res.status(200).json({
         success: true,
@@ -201,6 +203,7 @@ const removeMembers = catchAsyncErrors( async( req, res, next)=>{
     })
 })
 
+//to leave the group
 const leaveGroup = catchAsyncErrors( async( req, res, next)=>{
 
     const chatId = req.params.id;
@@ -219,24 +222,28 @@ const leaveGroup = catchAsyncErrors( async( req, res, next)=>{
         return next( new errorHandler("Group must have at least 3 members",400));
     }
 
+    //save all members for refetch before deleting the member(web socket refetch)
+     let AllMembers = chat.members;
+
     //remove with filter
     chat.members = chat.members.filter(( member)=>{
         return member.toString() !== req.user.id.toString();
     })
 
     // [choose the new creator] if user is a admin then after leave group , then at random member is selected as new admin(creator) 
-    if(chat.creator.toString() === req.user.id.toString()){
+    if(chat.creator.toString() === req.user._id.toString()){
         chat.creator = chat.members[ Math.floor(Math.random()*chat.members.length)]
     }
 
     //save and get the user name
     const [ user, save] = await Promise.all( [ User.findById( req.user.id), chat.save()]);
 
-    emitEvent( res, ALERT, chat.members, `User ${user.name} has left the group `);
+    emitEvent( res, ALERT, AllMembers, { type:"leaveChat", user: req.user._id, message:`${user.name} has left the ${chat.name} group`} );
+    emitEvent( req, REFETCH_CHATS, AllMembers, "refetch");
 
-    res.status(201).json({
+    res.status(200).json({
         success: true,
-        message: "Member Leave Successfully",
+        message: "Leave Group Successfully",
     })
 })
 
@@ -268,7 +275,7 @@ const sendAttachments = catchAsyncErrors( async( req, res, next)=>{
 
     //cloudinary
     let uploadedAttachments = [];
-    
+    let message;
     try{
         for( let i=0; i< attachments.length; i++){
             let getBase64 = `data:${attachments[i].mimetype};base64,${attachments[i].buffer.toString("base64")}`;
@@ -292,7 +299,7 @@ const sendAttachments = catchAsyncErrors( async( req, res, next)=>{
             }
 
             //create Message DB
-            const message = await Message.create( messageForDB);
+            message = await Message.create( messageForDB);
             
             //add all attachments for real-time emit event 
             uploadedAttachments.push({ public_id: cloud.public_id, url: cloud.secure_url});
@@ -307,7 +314,7 @@ const sendAttachments = catchAsyncErrors( async( req, res, next)=>{
 
      //emit message
      const messageForRealTime = {
-        _id: uuid(),
+        _id: message._id,
         chat: chatId,
         content: "",
         attachments: uploadedAttachments,
@@ -321,8 +328,8 @@ const sendAttachments = catchAsyncErrors( async( req, res, next)=>{
     // get socket id for all members
     const members = getSockets(chat.members);
     
-    req.app.get("io").to(members).emit(NEW_MESSAGE, { message: messageForRealTime} );
-    // emitEvent( res, NEW_MESSAGE_ALERT, chat.members, { chatId});
+    req.app.get("io").to(members).emit(NEW_MESSAGE, { chatId , message: messageForRealTime} );
+    emitEvent( res, NEW_MESSAGE_ALERT, chat.members, { chatId});
 
 
     res.status(200).json({
@@ -330,6 +337,7 @@ const sendAttachments = catchAsyncErrors( async( req, res, next)=>{
         message:"message Sent Successfully",
     })
 })
+
 
 const getChatDetails = catchAsyncErrors( async( req, res, next)=>{
 
@@ -398,7 +406,7 @@ const renameGroup = catchAsyncErrors( async( req, res, next)=>{
 
     await chat.save();
 
-    emitEvent( req, REFETCH_CHATS, chat.members );
+    emitEvent( req, REFETCH_CHATS, chat.members , "refetch");
 
     res.json({
         success: true,
@@ -406,6 +414,7 @@ const renameGroup = catchAsyncErrors( async( req, res, next)=>{
     })
 }) 
 
+//this is used to delete the chat , used for both single or group chat
 const deleteChat = catchAsyncErrors( async( req, res, next)=>{
 
     const chat = await Chat.findById( req.params.id);
@@ -415,8 +424,7 @@ const deleteChat = catchAsyncErrors( async( req, res, next)=>{
     }
 
     if(chat.groupchat && chat.creator.toString() !== req.user._id.toString()){
-        console.log("kjsad")
-        return next( new errorHandler("You are not allowed to delete this chat"));
+        return next( new errorHandler("Only Admin can delete this chat"));
     }
 
     if(!chat.members.includes(req.user._id)){
@@ -434,27 +442,62 @@ const deleteChat = catchAsyncErrors( async( req, res, next)=>{
         })
     })
 
-    //delete all attachments from cloudinary later
+    //delete all attachments from cloudinary
+    let promisesOfPublic_ids = [];
 
-    await Promise.all([
+    for(let i=0; i< public_ids.length;i++){
+        promisesOfPublic_ids.push( cloudinary.uploader.destroy( public_ids[i]));
+    }
+
+
+    //take group members and name before deleting chat for mesage alert
+    let members = chat.members;
+    let name = chat.name;
+    let creator = chat.creator;
+    let groupChat = chat.groupChat;
+
+    const resipi = await Promise.all([
         chat.deleteOne(),
         Message.deleteMany({ chat: req.params.id}),
+        ...promisesOfPublic_ids
+    ]);
 
-    ])
+    if(groupChat){
+        emitEvent( req, ALERT, members, { type:"deleteGroup", message: `${name} group deleted`, creator } );
+    }
+    else{
+        emitEvent( req, ALERT, members, { type:"deleteGroup", message: `${name} Chat deleted`, creator: req.user._id } );
+    }
+    
+    emitEvent( req, REFETCH_CHATS, members, "refetch");
 
-    res.status(204).json({
+
+    res.status(200).json({
         success: true,
         message: "Chat deleted Successfully"
     })
 })
 
-const getMessages = catchAsyncErrors( async( req, res)=>{
+//get messages
+const getMessages = catchAsyncErrors( async( req, res, next)=>{
 
     const chatId = req.params.id;
     const { page=1 } = req.query;
     
     const resultPerPage = 20;
     const skip = ( page-1)*resultPerPage;
+
+    //for authorization
+    const chat = await Chat.findById(chatId);
+
+    if(!chat){
+        return next(new errorHandler("Chat Not Found",404));
+    }
+
+    if(!chat.members.includes(req.user._id)){
+        return next( new errorHandler("You are not allowed to access this chat",403));
+    }
+
 
     const [ messages, totalMessages] = await Promise.all( [
                                         Message.find({chat: chatId})
@@ -470,6 +513,7 @@ const getMessages = catchAsyncErrors( async( req, res)=>{
     const totalPages = Math.ceil( totalMessages/resultPerPage) || 0;
 
 
+
     res.status(200).json({
         success: true,
         messages,
@@ -477,9 +521,150 @@ const getMessages = catchAsyncErrors( async( req, res)=>{
     })
 });
 
+//delete selected messages or delete all messages
+const deleteChatMessages = catchAsyncErrors( async( req, res, next)=>{
 
-export { newGroupChat, getMyChats, getMyGroups, addMembers, removeMembers, leaveGroup, sendAttachments, getChatDetails, renameGroup, deleteChat, getMessages};
+  // delete selected messages------------
+  if(!req.query.all){
+    
+      const chatId = req.params.id;
+      const messageArray = req.body.messageArray;
 
+      if(messageArray.length<1){
+          return next( new errorHandler("Please Add messages",400));
+      }
+
+      const chat = await Chat.findById(chatId);
+
+      if(!chat){
+          return next(new errorHandler("chat not found",404));
+      }
+      
+
+      //__find all messages, we need to delete media files from cloudinary
+      const promiseArrayForFindMessages=[];
+      for(let i=0; i< messageArray.length; i++){
+        console.log(typeof messageArray[i])
+          promiseArrayForFindMessages.push(Message.findById(messageArray[i]));
+      }
+
+      const messages = await Promise.all( promiseArrayForFindMessages);
+      
+      //__separate the messages from media message(cloudinary)
+      const publicIDsForCloudinary=[];
+
+      messages.forEach((message)=>{
+          if(!message.content){
+
+              for(let i=0; i< message.attachments.length; i++){
+                  publicIDsForCloudinary.push( message.attachments[i].public_id);
+              }
+          }
+      });
+
+
+      //__delete messages from cloudinary
+      const deleteFromCloudinaryPromise=[];
+
+      for(let i=0 ;i<publicIDsForCloudinary.length; i++){
+          deleteFromCloudinaryPromise.push( cloudinary.uploader.destroy( publicIDsForCloudinary[i]));
+      }
+
+    const cloud = await Promise.all(deleteFromCloudinaryPromise);
+
+      //__delete all messages
+      const deleteAllMessagesPromise = [];
+
+      for( let i=0; i<messageArray.length; i++){
+          deleteAllMessagesPromise.push( Message.findByIdAndDelete( messageArray[i]));
+      }
+
+      await Promise.all(deleteAllMessagesPromise);
+
+      //emit event to all the members 
+      emitEvent( req, DELETE_MESSAGES_ALERT, chat.members, { chatId: chat._id, user: req.user._id, message: `${req.user.name} delete ${messageArray.length} ${ (messageArray.length > 1) ? "messages" : "message" }` });
+
+      res.status(200).json({
+          success: true,
+          message: "messages deleted Successfully",
+      })
+    
+    }
+    
+
+
+
+
+    // delete all messages(clear chat)--------------------
+    else{ 
+
+        const chatId = req.params.id;
+
+        const chat = await Chat.findById(chatId);
+
+        if(!chat){
+            return next(new errorHandler("chat not found"));
+        }
+
+        //__find all messages, we need to delete media files from cloudinary
+        
+        const messages = await Message.find({chat: chatId});
+
+          //if messages are cleared already
+          if(messages.length <1){
+              return res.status(200).json({
+                  success: true,
+                  message: "all messages deleted successfully",
+              })
+          }
+
+     
+        //__separate the messages from media message(cloudinary)
+        const publicIDsForCloudinary=[];
+        messages.forEach((message)=>{
+            if(!message.content){
+               
+               for(let i=0; i<message.attachments.length; i++){
+                console.log("=== ",message.attachments[i]);
+                publicIDsForCloudinary.push( message.attachments[i].public_id);
+               } 
+            }
+        
+        })
+
+
+        //__delete messages from cloudinary
+        const deleteFromCloudinaryPromise=[];
+        
+        for(let i=0; i<publicIDsForCloudinary.length;i++){
+            deleteFromCloudinaryPromise.push( cloudinary.uploader.destroy( publicIDsForCloudinary[i]));
+        }
+
+        const cloud = await Promise.all(deleteFromCloudinaryPromise);
+        console.log(publicIDsForCloudinary)
+        console.log("-------")
+        console.log(cloud);
+    
+        //__delete all messages
+        await Message.deleteMany({chat: chat._id});
+
+        //emit event to all the members FOR refetch from other members;
+        emitEvent( req, DELETE_ALL_MESSAGES_ALERT, chat.members, { chatId: chat._id, user: req.user._id, message: `${req.user.name} deleted all messages` });
+
+   
+        res.status(200).json({
+            success:true,
+            message: "All Messages Deleted Successfully",
+        })
+
+    }
+
+    
+
+});
+
+
+export { newGroupChat, getMyChats, getMyGroups, addMembers, removeMembers, leaveGroup, sendAttachments, getChatDetails, renameGroup, deleteChat, getMessages, deleteChatMessages};
 
 
 

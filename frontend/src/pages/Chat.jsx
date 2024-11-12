@@ -2,23 +2,27 @@ import AppLayout from "../component/layout/AppLayout";
 import { Fragment, useRef, useState, useEffect } from "react";
 import { Button, IconButton, CircularProgress, Typography} from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
-import { setIsFileMenu} from "../redux/features/Slices/componentSlice.jsx";
+import { setIsFileMenu, setIsSelectedMessages, setIsConfirmationDialog} from "../redux/features/Slices/componentSlice.jsx";
 import TextareaAutosize from "react-textarea-autosize";
-import { AttachFile, Send} from "@mui/icons-material";
+import { AttachFile, Send, Close, Delete, } from "@mui/icons-material";
 import { FileMenu} from "../component/dialogs/FileMenu.jsx";
 import "./Chat.css";
 import MessageComponent from "../component/shared/MessageComponent";
 import { getSocket } from "../socket.jsx";
-import { useParams} from "react-router-dom";
-import { useGetChatDetailsQuery, useGetMessagesQuery} from "../redux/api/api.jsx";
-import { NEW_MESSAGE, START_TYPING, STOP_TYPING } from "../lib/events.jsx";
+import { useParams, useNavigate} from "react-router-dom";
+import { useGetChatDetailsQuery, useGetMessagesQuery, useDeleteMessagesMutation} from "../redux/api/api.jsx";
+import { DELETE_ALL_MESSAGES_ALERT, DELETE_MESSAGES_ALERT, NEW_MESSAGE, START_TYPING, STOP_TYPING } from "../lib/events.jsx";
 import { toast} from "react-hot-toast";
+import ConfirmationDialog from "../component/dialogs/ConfirmationDialog.jsx";
+import { setSelectDeleteMessagesCountZero, setSelectedMessagesForDelete } from "../redux/features/Slices/messageSlice.jsx";
 
 const Chat = () => {
 
   const socket = getSocket().socket;
   const params = useParams();
+  const navigate = useNavigate();
   const { user} = useSelector( state=> state.user);
+  const { selectDeleteMessagesCount} = useSelector(state=>state.message);
   //message and messages
   const [ message, setMessage] = useState("");
   const [ messages, setMessages] = useState([]);
@@ -37,7 +41,7 @@ const Chat = () => {
 
   //ref-------to send attachments----------
   const dispatch = useDispatch();
-  const { isFileMenu} = useSelector( state=>state.component);
+  const { isFileMenu, isSelectedMessages, isConfirmationDialog} = useSelector( state=>state.component);
   const [ fileMenuRef, setFileMenuRef] = useState("");
 
   const handleIconButtonOpen = (e)=>{
@@ -46,8 +50,6 @@ const Chat = () => {
    
   }
 
-  //------------------------
-
 
 
   //get chat details------------(api)--to get members to send messages
@@ -55,6 +57,10 @@ const Chat = () => {
   
   //get messages------------(api)
    let oldChunkMessages = useGetMessagesQuery({ chatId: params.chatId, page});
+
+  //delete messages -----------(api)--
+    let [ deleteMessages, DMResults] = useDeleteMessagesMutation();
+
 
 
      //setMessages with page
@@ -86,7 +92,7 @@ const Chat = () => {
 
 
 
-  // set Message Handler(input)----
+  // set Message Handler (input)----
   const sendMessageHandler = (e) =>{
 
     if(!message.trim()){
@@ -208,7 +214,7 @@ const Chat = () => {
 
 
 
-  // to listen the messages( socket IO)----
+  // to listen the messages ( new messages)( socket IO)----
   const newMessageEvent = ( data) =>{
      //check if chatId is same as current ChatId otherwise this message is added to another chat
      if( data.chatId!==params.chatId){
@@ -230,6 +236,127 @@ const Chat = () => {
   },[ socket]);
 
 
+
+  
+  //ref------ handler for deleting selected messages----------
+
+  const {  selectedMessagesForDelete} = useSelector( state=>state.message);
+
+  const handleDeleteAllSelectedMessages= async ()=>{
+
+    const toastId = toast.loading("Deleting Messages...");
+
+    try{
+      const result = await deleteMessages({chatId: params.chatId , messageArray: selectedMessagesForDelete});
+      console.log(result);
+      if(result.data){
+        toast.success("Messages Deleted Successfully", { id: toastId});
+        dispatch(setIsSelectedMessages(false));
+        dispatch(setSelectedMessagesForDelete([]));
+        dispatch( setSelectDeleteMessagesCountZero());
+        dispatch(setIsConfirmationDialog(false));
+        setPage(1);
+        setMessages([]);
+        setMessage("");
+        setScrollHeightState(0);
+        setScrollEndMsg(1);
+        setScrollMsg(1);
+        oldChunkMessages.refetch();
+       
+      }
+      else{
+        toast.error("Something went wrong", { id: toastId});
+       
+      }
+    }
+    catch(err){
+      toast.error("Something went wrong",{ id: toastId});
+    }
+
+    dispatch(setIsSelectedMessages(false));
+    dispatch(setSelectedMessagesForDelete([]));
+    dispatch( setSelectDeleteMessagesCountZero());
+    dispatch(setIsConfirmationDialog(false));
+
+   
+  };
+  
+
+
+  const crossHandler = ()=>{
+    dispatch( setIsSelectedMessages(false));
+    dispatch( setSelectedMessagesForDelete([]));
+    dispatch( setSelectDeleteMessagesCountZero());
+  }
+
+//when chat is delete from one user , it also deleted from another user, link socket
+
+//alert for delete selected messages for refetch 
+  const socketDeleteMessagesAlert = ( data)=>{
+    if(data.chatId!==params.chatId){
+      return;
+    }
+    if( user && user._id===data.user){
+      return;
+    }
+    toast.success(data.message);
+    setPage(1);
+    setMessages([]);
+    setMessage("");
+    setScrollHeightState(0);
+    setScrollEndMsg(1);
+    setScrollMsg(1);
+    oldChunkMessages.refetch();
+ 
+  };
+
+  useEffect(()=>{
+
+    socket.on( DELETE_MESSAGES_ALERT, socketDeleteMessagesAlert);
+
+    return ()=>{
+      socket.off( DELETE_MESSAGES_ALERT, socketDeleteMessagesAlert);
+    }
+
+  },[socket]);
+
+  
+//alert for clear all messages for refetch 
+const socketDeleteAllMessagesAlert = ( data)=>{
+  if(data.chatId!==params.chatId){
+    return;
+  }
+  if( user && user._id!==data.user){
+    toast.success(data.message);
+  }
+  
+  setPage(1);
+  setMessages([]);
+  setMessage("");
+  setScrollHeightState(0);
+  setScrollEndMsg(1);
+  setScrollMsg(1);
+  oldChunkMessages.refetch();
+
+};
+
+useEffect(()=>{
+
+  socket.on( DELETE_ALL_MESSAGES_ALERT, socketDeleteAllMessagesAlert);
+
+  return ()=>{
+    socket.off( DELETE_ALL_MESSAGES_ALERT, socketDeleteAllMessagesAlert);
+  }
+
+},[socket]);
+
+const { isUserLogoutConfirmation} = useSelector(state=>state.component);
+
+console.log(isUserLogoutConfirmation);
+  
+  //------------------------
+
+
   
   //------reset all states when go to another chat re-renders----------------
   useEffect(()=>{
@@ -241,19 +368,30 @@ const Chat = () => {
       setScrollHeightState(0);
       setScrollEndMsg(1);
       setScrollMsg(1);
-      
+      dispatch( setIsSelectedMessages(false));
+      dispatch( setSelectedMessagesForDelete([]));
+      dispatch( setSelectDeleteMessagesCountZero());
     }
     
     
   },[params.chatId]);
 
-  console.log(chatDetails?.data?.chat?.members)
-  console.log(params.chatId);
+
+
+  //if user write a id of chat and it is not preseant in that chat then redirect to home page
+  if(chatDetails?.data){
+    if(!chatDetails?.data?.chat?.members.includes(user?._id.toString())){
+       navigate("/");
+    }
+  }
+
+
 
   //show errors with useEffect----
   useEffect(()=>{
 
     if( chatDetails?.isError){
+      console.log(chatDetails);
       toast.error( chatDetails.error.data.message || "Something Went Wrong");
     }
 
@@ -269,7 +407,7 @@ const Chat = () => {
       <Fragment>
 
         {/* messages */}
-        <div className="messagesRender" ref={scrollRef} onScroll={handleInfiScroll} style={{height:"87%", overflow:"auto", position:"", border:"2px solid green", display:"flex", flexDirection:"column", padding:"5px 14px"}}>
+        <div className="messagesRender" ref={scrollRef} onScroll={handleInfiScroll} style={{height:"87%", overflow:"auto", display:"flex", flexDirection:"column", padding:"5px 14px"}}>
       
             {/* loading */}
             {
@@ -288,6 +426,7 @@ const Chat = () => {
               })
             }
 
+
              {/* typing info */}
              {
                typingRealInfo
@@ -301,7 +440,31 @@ const Chat = () => {
 
         </div>
 
+      {
+        isSelectedMessages
+        ?
+        <>
+        {/* delete messages select toggle */}
+         <div style={{height:"13%", transition:"2s all", backgroundColor:"rgb(250, 125, 103)", display:"flex", justifyContent:"space-between", alignItems:"center"}}>
+            {/* open dialog */}
+            {/* cross-icon */}
+            <IconButton onClick={()=>{ dispatch(setIsSelectedMessages(false))}} sx={{ marginLeft:"20px"}}>
+                <Close onClick={crossHandler} sx={{fontSize:"30px", color:"black"}}/>
+            </IconButton>
+            {/* message count */}
+            <Typography >{ selectDeleteMessagesCount > 1 ? `${ selectDeleteMessagesCount} messages`: `${ selectDeleteMessagesCount} message` } selected</Typography>
+            
+            {/* delete button */}
+                <IconButton onClick={()=>{dispatch(setIsConfirmationDialog(true)) } } sx={{ marginRight:"80px"}} disabled={ !(selectDeleteMessagesCount > 0)} >
+                    <Delete sx={{fontSize:"30px",color:"black", opacity: selectDeleteMessagesCount > 0 ? "1" : "0.3" }}/>
+                </IconButton>
 
+            {/* dialog */}
+            <ConfirmationDialog title={"Delete Confirmation"} content={`delete ${selectDeleteMessagesCount} messages`} handler={ handleDeleteAllSelectedMessages} loading={ DMResults?.isLoading} />
+         </div>
+        </>
+        :
+        <>
         {/* input messages */}
         <div className="sendMessage" style={{height:"13%", display:"flex", flexDirection:"row" , alignItems:"center" , backgroundColor:"white"}}>
           
@@ -336,6 +499,9 @@ const Chat = () => {
 
         {/* File Menu */}
         <FileMenu anchorEl={ fileMenuRef} />
+      </>
+
+      }
 
       </Fragment>
     )

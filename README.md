@@ -15,9 +15,10 @@ This is a real-time chat application built using the MERN stack (MongoDB, Expres
 - **Admin Panel**: the entire control of the site is with the administrator( charts, panel, secret Key). 
 - **Media Share**: users can share photos, videos and audio.
 - **Error Handling**: Comprehensive error handling throughout the application.
+- **Select Messages**: Deleting messages by selecting it(multiple)
 - **Responsive UI**: Built with Material UI for a seamless user experience.
-- **Infinite Scrolling**: Used in UI for Fetching Old chats.
-- **Admin Control Panel**: Manage Users, messages and groups.
+- **Infinite Scrolling**: Used in UI for Fetching Old chats, 20 messages per page.
+- **Admin Control Panel**: Manage Users, messages and groups, last 7 days activities, charts.
 
 ## Tech Stack
 
@@ -29,6 +30,7 @@ This is a real-time chat application built using the MERN stack (MongoDB, Expres
   - Material UI
   - Axios
   - Moment.js
+  - chart.js
 
 - **Backend**:
   - Node.js

@@ -4,7 +4,7 @@ import { Typography } from '@mui/material';
 
 const Home = () => {
   return (
-    <div >
+    <div > 
       <Typography sx={{textAlign:"center", fontSize:"2rem"}}>Select a friend to Chat</Typography>
     </div>
   )

@@ -191,7 +191,56 @@ const api = createApi({
                 }
             }),
             invalidatesTags: ["Chat"],
-        })
+        }),
+        deleteChat: builder.mutation({
+            query:( chatId)=>({
+                url: `/chat/${chatId}`,
+                method:"DELETE",
+                credentials:"include",
+                headers:{
+                    "Content-Type":"application/json",
+                    "Authorization":`Bearer ${token}`,
+                }
+            }),
+            invalidatesTags: ["Chat"],
+        }),
+        leaveGroup: builder.mutation({
+            query: ( chatId)=>({
+                url: `/chat/leave/${chatId}`,
+                method: "DELETE",
+                credentials:"include",
+                headers:{
+                    "Content-Type":"application/json",
+                    "Authorization":`Bearer ${token}`
+                }
+            }),
+            invalidatesTags: ["Chat"],
+        }),
+        deleteMessages: builder.mutation({
+            query: ({chatId, messageArray=[], all=false})=>{
+
+                let url = `/chat/message/del/${chatId}`;
+                let body = { chatId, messageArray};
+
+                console.log("chatId ",chatId, " messageArray ",messageArray, "all ",all);
+                if(all){
+                    url += "?all=true";
+                    body = {};
+                }
+
+                return {
+                url ,
+                method:"DELETE",
+                body,
+                credentials: "include",
+                headers:{
+                    "Content-Type":"application/json",
+                    "Authorization":`Bearer ${token}`,
+                },
+            }
+          }, 
+          keepUnusedDataFor:0,
+        }),
     })
 })
 
@@ -212,6 +261,9 @@ export const {
     useRenameGroupMutation,
     useRemoveGroupMemberMutation,
     useAddGroupMembersMutation,
+    useDeleteChatMutation,
+    useLeaveGroupMutation,
+    useDeleteMessagesMutation,
 } = api;
 
 
