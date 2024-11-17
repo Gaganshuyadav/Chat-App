@@ -1,7 +1,7 @@
-import { useState} from "react";
+import { useEffect, useState} from "react";
 import Grid from "@mui/material/Grid2"; 
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Drawer, Typography, Box, IconButton } from "@mui/material";
+import { Drawer, Typography, Box, IconButton, CircularProgress } from "@mui/material";
 //MUI Icons--
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
@@ -10,16 +10,28 @@ import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
 import GroupsIcon from "@mui/icons-material/Groups";
 import MessageIcon from "@mui/icons-material/Message";
 import LogoutIcon from "@mui/icons-material/Logout";
+import { useSelector, useDispatch } from "react-redux";
+import { setIsMobile } from "../../redux/features/Slices/componentSlice";
+import { adminCheck, adminLogout } from "../../redux/features/thunks/admin";
+import { setIsLogout, clearErrorForLogin, clearErrorForLayout, clearMessageForLogin, clearMessageForLayout } from "../../redux/features/Slices/adminSlice";
+import { toast} from "react-hot-toast";
 //--
 
 export default function AdminLayout( { children}){
 
     const location = useLocation();
     const navigate = useNavigate();
-    const isAdmin = true;
+    const dispatch = useDispatch();
+    const { isMobile} = useSelector(state=>state.component);
+    const { isAdmin, isLoading} = useSelector(state=>state.admin);
 
-    const handleLogout = ()=>{
-        console.log("logout");
+
+
+    const handleLogout = ()=>{  
+        dispatch(setIsLogout(true));
+        dispatch( adminLogout());
+      
+
     }
 
     const adminTabs = [
@@ -83,18 +95,27 @@ export default function AdminLayout( { children}){
         )
     }
 
-    const [ isMobile, setIsMobile] = useState(false);
-    const handleSidebarClose = ()=>{
-        setIsMobile(false);
-    }
 
+
+    //admin login check
     if(!isAdmin){
         navigate("/admin");
     }
 
+  
+
+   
     return(
         <Grid container sx={{ height:"100vh"}}>
-
+            {
+            isLoading
+            ?
+            <div style={{ width:"100vw", height:"100vh", display:"flex", alignItems:"center", justifyContent:"center"}}>
+              <CircularProgress size={40} sx={{ color:"green"}}/>
+            </div>
+            :
+            (
+            <>
             {/* Sidebar */}
             <Grid size={{ xs:0, sm:4, md:3 }} sx={{display:{xs:"none", sm:"block"}}}>
                 <Sidebar/>
@@ -115,15 +136,18 @@ export default function AdminLayout( { children}){
                     top:"20px",
                 }}
             >
-                <IconButton onClick={()=>{ setIsMobile(!isMobile)}}>
+                <IconButton onClick={()=>{ dispatch(setIsMobile(!isMobile))}}>
                     { isMobile ? <CloseIcon/> :  <MenuIcon/>}
                 </IconButton>
             </Box>
 
             {/* Drawer for mobiles */}
-            <Drawer open={isMobile} onClose={handleSidebarClose} sx={{display:{xs:"block", sm:"none"}}}>
+            <Drawer open={isMobile} onClose={()=>{dispatch(setIsMobile(!isMobile))}} sx={{display:{xs:"block", sm:"none"}}}>
                 <Sidebar style={{width:"50vw",}}/>
             </Drawer>
+            </>
+            )
+        }
 
         </Grid>
     )

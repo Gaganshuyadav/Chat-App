@@ -1,15 +1,18 @@
-import { memo} from "react";
+import { memo, useState} from "react";
 import { AvatarGroup, Box, Avatar, Typography} from "@mui/material";
 import { Link, useParams} from "react-router-dom";
 import { useSelector, useDispatch} from "react-redux";
 import { removeMessagesAlert } from "../../redux/features/Slices/notifySlice";
 import { setCurrentChat } from "../../redux/features/Slices/chatSlice";
+import { motion} from "motion/react";
+  
 
 const ChatItem = ( { chat, idx}) => {
 
   const params = useParams();
   const dispatch = useDispatch();
   const {  newMessagesAlert} = useSelector( state=>state.notify);
+  const [ isHover, setIsHover] = useState(false);
 
   //if user open the same chat then alerts should be deleted or not shown
   if( newMessagesAlert?.find((alert)=>{ return alert.chatId === params.chatId}) ){
@@ -27,14 +30,21 @@ const ChatItem = ( { chat, idx}) => {
         to={`/chat/${chat._id}`} 
         style={{textDecoration:"none", color:"black"}}
         onContextMenu={(e)=>{e.preventDefault()}}
+
+        //hover  condition
+        onMouseEnter={()=>setIsHover(true)}
+        onMouseLeave={()=>setIsHover(false)}
     >
-      <Box 
-          sx={{ 
-              backgroundColor: `${chat._id}`===params.chatId ? "black" : "white", 
+      <motion.div 
+       whileInView={{opacity:1}}
+        animate={{opacity:0}}
+          style={{ 
+              backgroundColor: `${chat._id}`===params.chatId ? "black" : isHover ? "rgba(0, 0, 0, 0.274)" : "white", 
               color: `${chat._id}`===params.chatId ? "white":"black", 
               display:"flex", 
               alignItems:"start",
-              padding:"10px 30px 10px 1px","&:hover":{backgroundColor: `${chat._id}`!==params.chatId ? "rgba(0, 0, 0, 0.274)":"black" },}}
+              padding:"10px 30px 10px 1px",
+            }}
       >
         
         <Box sx={{position:"relative"}}>
@@ -65,7 +75,7 @@ const ChatItem = ( { chat, idx}) => {
         </Box>
 
         
-      </Box>
+      </motion.div>
     </Link>
   )
 

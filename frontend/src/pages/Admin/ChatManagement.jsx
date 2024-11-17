@@ -2,83 +2,14 @@ import { useEffect} from "react";
 import AdminLayout from "../../component/layout/AdminLayout";
 import Table from "../../component/shared/Table";
 import { Box, Avatar, AvatarGroup, Typography} from "@mui/material";
+import { useSelector, useDispatch} from "react-redux";
+import { adminAllChats } from "../../redux/features/thunks/admin";
+import TableSkeleton from "../../component/shared/TableSkeleton";
 
 export default function ChatManagement(){
 
-
-  const chatSampleData = [ 
-    {
-      _id: "hfhghghghghghghghghg455411",
-      name: "group ha hamara",
-      groupChat: false,
-      avatar: ["https://images.unsplash.com/photo-1448301858776-07f780e9c9da?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGJ1aWxkaW5nc3xlbnwwfHwwfHx8MA%3D%3D","https://images.unsplash.com/photo-1448301858776-07f780e9c9da?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGJ1aWxkaW5nc3xlbnwwfHwwfHx8MA%3D%3D","https://images.unsplash.com/photo-1448301858776-07f780e9c9da?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGJ1aWxkaW5nc3xlbnwwfHwwfHx8MA%3D%3D"],
-      members: [
-        {_id: "hfhghghgshghgh7ghghghg45541", name: "gaganshu yadav", avatar: "https://images.unsplash.com/photo-1448301858776-07f780e9c9da?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGJ1aWxkaW5nc3xlbnwwfHwwfHx8MA%3D%3D"},
-        {_id: "hfhghghgha4ghghghghghg45541", name: "gaganshu yadav", avatar: "https://images.unsplash.com/photo-1448301858776-07f780e9c9da?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGJ1aWxkaW5nc3xlbnwwfHwwfHx8MA%3D%3D"},
-        {_id: "hfhghgh8ghgwhghghghghg45541", name: "gaganshu yadav", avatar: "https://images.unsplash.com/photo-1448301858776-07f780e9c9da?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGJ1aWxkaW5nc3xlbnwwfHwwfHx8MA%3D%3D"}
-    ],
-      creator:{
-          name: "gaganshu yadav",
-          avatar: "https://images.unsplash.com/photo-1448301858776-07f780e9c9da?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGJ1aWxkaW5nc3xlbnwwfHwwfHx8MA%3D%3D",
-      },
-      totalMembers: 56,
-      totalMessages: 67,
-  },
-  {
-    _id: "hfhghghghghghghghghg4554144",
-    name: "group ha hamara",
-    groupChat: true,
-    avatar: ["https://images.unsplash.com/photo-1448301858776-07f780e9c9da?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGJ1aWxkaW5nc3xlbnwwfHwwfHx8MA%3D%3D","https://images.unsplash.com/photo-1448301858776-07f780e9c9da?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGJ1aWxkaW5nc3xlbnwwfHwwfHx8MA%3D%3D","https://images.unsplash.com/photo-1448301858776-07f780e9c9da?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGJ1aWxkaW5nc3xlbnwwfHwwfHx8MA%3D%3D"],
-    members: [
-      {_id: "hfhghaghghghgh7ghghghg45541", name: "gaganshu yadav", avatar: "https://images.unsplash.com/photo-1448301858776-07f780e9c9da?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGJ1aWxkaW5nc3xlbnwwfHwwfHx8MA%3D%3D"},
-      {_id: "hfhgshghgh4ghghghghghg45541", name: "gaganshu yadav", avatar: "https://images.unsplash.com/photo-1448301858776-07f780e9c9da?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGJ1aWxkaW5nc3xlbnwwfHwwfHx8MA%3D%3D"},
-      {_id: "hfhghgh8ghgfhghghghghg45541", name: "gaganshu yadav", avatar: "https://images.unsplash.com/photo-1448301858776-07f780e9c9da?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGJ1aWxkaW5nc3xlbnwwfHwwfHx8MA%3D%3D"}
-  ],
-    creator:{
-        name: "gaganshu yadav",
-        avatar: "https://images.unsplash.com/photo-1448301858776-07f780e9c9da?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGJ1aWxkaW5nc3xlbnwwfHwwfHx8MA%3D%3D",
-    },
-    totalMembers: 56,
-    totalMessages: 67,
-},
-{
-  _id: "hfhghghghghghghghg5hg45541",
-  name: "group ha hamara",
-  groupChat: false,
-  avatar: ["https://images.unsplash.com/photo-1448301858776-07f780e9c9da?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGJ1aWxkaW5nc3xlbnwwfHwwfHx8MA%3D%3D","https://images.unsplash.com/photo-1448301858776-07f780e9c9da?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGJ1aWxkaW5nc3xlbnwwfHwwfHx8MA%3D%3D","https://images.unsplash.com/photo-1448301858776-07f780e9c9da?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGJ1aWxkaW5nc3xlbnwwfHwwfHx8MA%3D%3D"],
-  members: [
-    {_id: "hfhghghghghgh7ghghgshg45541", name: "gaganshu yadav", avatar: "https://images.unsplash.com/photo-1448301858776-07f780e9c9da?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGJ1aWxkaW5nc3xlbnwwfHwwfHx8MA%3D%3D"},
-    {_id: "hfhghghgh4ghghghgshghg45541", name: "gaganshu yadav", avatar: "https://images.unsplash.com/photo-1448301858776-07f780e9c9da?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGJ1aWxkaW5nc3xlbnwwfHwwfHx8MA%3D%3D"},
-    {_id: "hfhghgh8ghghghghwghghg45541", name: "gaganshu yadav", avatar: "https://images.unsplash.com/photo-1448301858776-07f780e9c9da?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGJ1aWxkaW5nc3xlbnwwfHwwfHx8MA%3D%3D"}
-],
-  creator:{
-      name: "gaganshu yadav",
-      avatar: "https://images.unsplash.com/photo-1448301858776-07f780e9c9da?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGJ1aWxkaW5nc3xlbnwwfHwwfHx8MA%3D%3D",
-  },
-  totalMembers: 56,
-  totalMessages: 67,
-},
-{
-  _id: "hfhghghghghghghghg0hg45541",
-  name: "group ha hamara",
-  groupChat: true,
-  avatar: ["https://images.unsplash.com/photo-1448301858776-07f780e9c9da?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGJ1aWxkaW5nc3xlbnwwfHwwfHx8MA%3D%3D","https://images.unsplash.com/photo-1448301858776-07f780e9c9da?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGJ1aWxkaW5nc3xlbnwwfHwwfHx8MA%3D%3D","https://images.unsplash.com/photo-1448301858776-07f780e9c9da?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGJ1aWxkaW5nc3xlbnwwfHwwfHx8MA%3D%3D"],
-  members: [
-          {_id: "hfhghghghghgh7ghghghg45541", name: "gaganshu yadav", avatar: "https://images.unsplash.com/photo-1448301858776-07f780e9c9da?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGJ1aWxkaW5nc3xlbnwwfHwwfHx8MA%3D%3D"},
-          {_id: "hfhghghgh4ghghghghghg45541", name: "gaganshu yadav", avatar: "https://images.unsplash.com/photo-1448301858776-07f780e9c9da?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGJ1aWxkaW5nc3xlbnwwfHwwfHx8MA%3D%3D"},
-          {_id: "hfhghgh8ghghghghghghg45541", name: "gaganshu yadav", avatar: "https://images.unsplash.com/photo-1448301858776-07f780e9c9da?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGJ1aWxkaW5nc3xlbnwwfHwwfHx8MA%3D%3D"},
-          {_id: "hfhghghghghgh7ghghghg45541", name: "gaganshu yadav", avatar: "https://images.unsplash.com/photo-1448301858776-07f780e9c9da?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGJ1aWxkaW5nc3xlbnwwfHwwfHx8MA%3D%3D"},
-          {_id: "hfhghghgh4ghghghghghg45541", name: "gaganshu yadav", avatar: "https://images.unsplash.com/photo-1448301858776-07f780e9c9da?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGJ1aWxkaW5nc3xlbnwwfHwwfHx8MA%3D%3D"},
-          {_id: "hfhghgh8ghghghghghghg45541", name: "gaganshu yadav", avatar: "https://images.unsplash.com/photo-1448301858776-07f780e9c9da?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGJ1aWxkaW5nc3xlbnwwfHwwfHx8MA%3D%3D"}
-      ],
-  creator:{
-      name: "gaganshu yadav",
-      avatar: "https://images.unsplash.com/photo-1448301858776-07f780e9c9da?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGJ1aWxkaW5nc3xlbnwwfHwwfHx8MA%3D%3D",
-  },
-  totalMembers: 56,
-  totalMessages: 67,
-}
-  ];
+  const dispatch = useDispatch();
+  const { dashboardIsLoading, allChats} = useSelector(state=>state.admin);
 
     const columns = [
       { field: "id", headerName: "ID", headerClassName:"table-header",  width:250 },
@@ -97,7 +28,6 @@ export default function ChatManagement(){
       { field: "groupChat", headerName: "Group", headerClassName:"table-header" ,width: 80,  },
       { field: "totalMembers", headerName: "Total Members", headerClassName:"table-header" ,width: 150,  },
       { field: "members", headerName: "Members", headerClassName:"table-header" , width: 250, renderCell: ( params)=>{
-        console.log(params);
         return(
             <Box sx={{height:"100%", display:"flex", alignItems:"center"}}>
               <AvatarGroup>
@@ -123,7 +53,7 @@ export default function ChatManagement(){
       } } ,
     ]
     
-  const rows = chatSampleData && chatSampleData.map( ( chat)=>{
+  const rows = allChats && allChats.map( ( chat)=>{
                       return { id: chat._id, 
                                avatar: chat.avatar, 
                                name: chat.name, 
@@ -134,16 +64,22 @@ export default function ChatManagement(){
                                creator: chat.creator,
                             };
                   })
-      
+
     useEffect(()=>{
-       
-    }, []);
+
+      dispatch( adminAllChats());
+    },[]);
+      
 
     return(
-        <>
-          <AdminLayout>
-              <Table heading={"ALL Chats"} rows={rows} columns={columns} />
-          </AdminLayout>
-        </>
+        <AdminLayout>
+        {
+          dashboardIsLoading
+          ?
+          <TableSkeleton/>
+          :
+          <Table heading={"ALL Chats"} rows={rows} columns={columns} />
+        }
+        </AdminLayout>
     )
 }

@@ -14,6 +14,7 @@ import { getSocket } from "../../socket.jsx";
 //-----
 import { useMyChatsQuery} from "../../redux/api/api.jsx";
 import { ALERT, NEW_MESSAGE_ALERT, NEW_REQUEST, REFETCH_CHATS } from "../../lib/events.jsx";
+import { useNavigate } from "react-router-dom";
 
 
 const AppLayout = () => (WrappedComponent) =>{ 
@@ -22,9 +23,11 @@ const AppLayout = () => (WrappedComponent) =>{
         const socket = getSocket().socket;
         
         const dispatch = useDispatch();
+        const navigate = useNavigate();
         const { isMobile} = useSelector(state=>state.component);
-        const { user} = useSelector( state=>state.user);
+        const { user, isLogin} = useSelector( state=>state.user);
 
+     
         const { isLoading, isError, isSuccess, data, error, refetch} = useMyChatsQuery("");
 
 
@@ -59,8 +62,16 @@ const AppLayout = () => (WrappedComponent) =>{
 
         //refetch chats when friend request accept
         const refetchChats = ( data)=>{
-            refetch();
+           
+            if("friendRequestAccept"===data.message){
+                if(data.sender._id===user._id){ 
+                    toast.success(`${data.receiver.name} accept friend request `);
+                }
+            }
+           
+            refetch(); 
         }
+
         useEffect(()=>{
             socket.on( REFETCH_CHATS, refetchChats);
 
@@ -68,6 +79,8 @@ const AppLayout = () => (WrappedComponent) =>{
                 socket.off(REFETCH_CHATS, refetchChats);
             }
         },[socket]);
+
+        //for user
 
 
         //alert when new Group created
@@ -102,9 +115,16 @@ const AppLayout = () => (WrappedComponent) =>{
         useEffect(()=>{
             if(isError){
                 toast.error(error?.data?.message);
+               
             }
 
         },[ isError]);
+
+        useEffect(()=>{
+            if(user?._id){
+                refetch();
+            }
+        },[user]);
 
 
         return(
@@ -141,7 +161,7 @@ const AppLayout = () => (WrappedComponent) =>{
                     <Grid  
                         size={{ xs:12, sm:8 ,md:6 , lg:6 }}
                         style={{
-                            backgroundColor:"rgb(238, 228, 226)",
+                            backgroundColor:"rgba(255,214,214,0.8)",
                             color:"white",
                             height:"100%",
                         }} 

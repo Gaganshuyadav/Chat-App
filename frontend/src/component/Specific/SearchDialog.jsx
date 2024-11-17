@@ -1,6 +1,6 @@
 import { useState, useEffect} from 'react'
 import { Dialog, DialogTitle, TextField, Box, InputAdornment, List, CircularProgress } from "@mui/material";
-import { Search } from '@mui/icons-material';
+import { PersonAddAlt1, Search } from '@mui/icons-material';
 import UserItem from '../shared/UserItem';
 import { useSelector, useDispatch } from 'react-redux';
 import { setIsSearch} from "../../redux/features/Slices/componentSlice";
@@ -113,7 +113,7 @@ const SearchDialog = () => {
               {
                 users && users.map((user)=>{
                   return(
-                        <UserItem key={user._id} user={ user} handler={addFriendsHandler} handlerIsLoading={isLoadingSendFriendRequest} /> 
+                        <UserItem key={user._id} user={ user} handler={addFriendsHandler} handlerIsLoading={isLoadingSendFriendRequest} firstIcon={<PersonAddAlt1 sx={{ borderRadius:"50%", fontSize:"30px", color: isLoadingSendFriendRequest ? "gray" : "black",transition:"all 500ms", "&:hover":{ color:"orange "} }} />}  /> 
                   )
                 })
               }
@@ -128,4 +128,5 @@ const SearchDialog = () => {
   )
 }
 
-export default SearchDialog
+export default SearchDialog;
+

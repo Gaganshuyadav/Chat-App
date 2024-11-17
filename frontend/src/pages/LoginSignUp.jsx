@@ -11,6 +11,7 @@ import { useSelector, useDispatch} from "react-redux";
 import { login, register} from "../redux/features/thunks/user";
 import { clearError, clearSuccess} from "../redux/features/Slices/userSlice";
 import { toast} from "react-hot-toast";
+import { useMyChatsQuery } from "../redux/api/api";
 
 export default function Login(){
 
@@ -19,8 +20,10 @@ export default function Login(){
 
     const navigate = useNavigate();
 
+    const myChatsQueryRR = useMyChatsQuery();
     //toggle login and signup
     const [ loginToggle, setLoginToggle] = useState(true);
+
 
     //signup state
     const [ name, setName] = useState("");
@@ -84,17 +87,22 @@ export default function Login(){
     }
 
     //if loggedin redirect to home page
+   useEffect(()=>{
     if(isLogin){
       navigate("/");
     }
+   },[isLogin])
+    
+
 
     useEffect(()=>{
       if(error){
-        // toast.error(error); 
+        toast.error(error); 
+        console.log(error);
         dispatch(clearError());
       }
       if(success){
-        // toast.success("User Login Successfully");
+        toast.success("User Login Successfully");
         dispatch( clearSuccess());
       }
     

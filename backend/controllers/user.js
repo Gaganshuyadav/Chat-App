@@ -47,11 +47,9 @@ const newUser =  catchAsyncErrors( async ( req, res, next)=>{
         }
     });
 
-    console.log(user);
-    
 
     sendToken( res, user, 201, "User created successfully");
-    
+
 });
 
 //login user and save token in cookies
@@ -184,7 +182,7 @@ const acceptFriendRequest = catchAsyncErrors( async( req, res, next)=>{
     const { requestId, accept} = req.body;
     
     
-    const request = await Request.findById(requestId).populate("receiver","name _id").populate("sender","name");
+    const request = await Request.findById(requestId).populate("receiver","name _id").populate("sender","name _id");
     
     if(!request){
         return next( new errorHandler("Request Not Found",404));
@@ -230,7 +228,7 @@ const acceptFriendRequest = catchAsyncErrors( async( req, res, next)=>{
     })
 
     //refetch chats
-    emitEvent( req, REFETCH_CHATS, members, "refetch all chats");
+    emitEvent( req, REFETCH_CHATS, members, { message:"friendRequestAccept", sender: { _id: request.sender._id, name: request.sender.name}, receiver:{ _id: request.receiver._id, name: request.receiver.name} });
         
 })
 

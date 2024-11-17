@@ -6,6 +6,7 @@ import { RenderAttachment} from "../shared/RenderAttachment";
 import { useSelector, useDispatch} from "react-redux";
 import { setIsSelectedMessages } from '../../redux/features/Slices/componentSlice.jsx';
 import { setSelectedMessagesForDelete, setSelectDeleteMessagesCountIncrement, setSelectDeleteMessagesCountDecrement, setSelectDeleteMessagesCountZero } from "../../redux/features/Slices/messageSlice.jsx";
+import { motion} from "motion/react";
 
 const MessageComponent = ( { message, user}) => {
 
@@ -37,7 +38,7 @@ const MessageComponent = ( { message, user}) => {
 
   return (
      
-  <Box 
+  <Box
     onClick={ handleSelectCheckClick} 
     sx={{
         display:"flex", 
@@ -73,7 +74,10 @@ const MessageComponent = ( { message, user}) => {
     {/* message content box */} {/* align self */}{/*flex-grow */}
     <div style={{ flexGrow:"1", display:"flex", flexDirection:"column"}}>
       
-      <div  
+      <motion.div
+        whileInView={{x:0}}
+        animate={{x:80}}         
+
         style={{ 
             backgroundColor: sender?._id===user?._id ? "rgb(250, 125, 103)":"rgb(7, 94,84)",
             color:"black", 
@@ -132,7 +136,7 @@ const MessageComponent = ( { message, user}) => {
         <Typography sx={{color: "rgb(220,220,220)", fontSize:"14px"}}>
             {moment(createdAt).fromNow()}
         </Typography>
-      </div>
+      </motion.div>
     </div>
 
   </Box>

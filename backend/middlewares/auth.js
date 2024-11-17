@@ -15,9 +15,16 @@ const isAuthenticated = catchAsyncErrors( async ( req, res, next) =>{
         }
     }
 
-    const decodedData = jwt.verify( token, process.env.JWT_SECRET);
+    let decodeData;
+    try{
+        decodeData = jwt.verify( token, process.env.JWT_SECRET);
+    }
+    catch(err){
+        return next( new errorHandler("loading...",401));
+    }
+
     
-    const user = await User.findById( decodedData.id);
+    const user = await User.findById( decodeData.id);
 
     if(!user){
         return next("Please Signup",401);
@@ -36,13 +43,22 @@ const adminOnly = catchAsyncErrors( async( req, res, next)=>{
     if(!token){
         
         token = req.headers.authorization.split(" ")[1] ;
-        if(!token){
-            return next(new errorHandler("Please Login to access this resource", 401));
-        }
-        return next( new errorHandler("Only Admin can access this route", 401));
-    }
 
-    const secretKey = jwt.verify( token, process.env.JWT_SECRET);
+        if(!token){
+            return next(new errorHandler("Only Admin can Access this resource", 401));
+        }
+    }
+   
+
+    let secretKey;
+    
+    try{
+        secretKey = jwt.verify( token, process.env.JWT_SECRET);
+    }
+    catch(err){
+        return next( new errorHandler("loading...",401));
+    }
+ 
 
     const isMatched = secretKey === process.env.ADMIN_SECRET_KEY;
    
@@ -65,7 +81,7 @@ const socketAuthenticate = async ( socket, next)=>{
 
         try{
 
-        const decodeData = jwt.verify( token, process.env.JWT_SECRET);
+        const decodeData = await jwt.verify( token, process.env.JWT_SECRET);
       
             socket.user = await User.findById(decodeData.id);
 

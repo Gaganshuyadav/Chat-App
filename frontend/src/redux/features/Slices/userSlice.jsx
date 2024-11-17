@@ -24,11 +24,12 @@ export const userSlice = createSlice({
         builder.addCase( login.pending, ( state, action)=>{
             state.isLoading = true;
             state.success = false;
+            state.isLogin = false;
         }),
         builder.addCase( login.fulfilled, ( state, action)=>{
             state.user = action.payload.user;
             state.isLoading = false;
-            state.isLogin = action.payload.success;
+            state.isLogin = true;
             state.success = true;
         }),
         builder.addCase( login.rejected, ( state, action)=>{
@@ -40,12 +41,13 @@ export const userSlice = createSlice({
         builder.addCase( register.pending, ( state, action)=>{
             state.isLoading = true;
             state.success = false;
+            state.isLogin = false;
         }),
         builder.addCase( register.fulfilled, ( state, action)=>{
             state.user = action.payload.user;
             state.isLoading = false;
             state.user = action.payload.user;
-            state.isLogin = action.payload.success;
+            state.isLogin = true;
             state.success = true;
         }),
         builder.addCase( register.rejected, ( state, action)=>{

@@ -5,48 +5,16 @@ import { Box, Avatar, Typography} from "@mui/material";
 import { fileFormat} from "../../lib/features.jsx"; 
 import { RenderAttachment} from "../../component/shared/RenderAttachment.jsx";
 import "../../component/styles/shared.css";
+import { useDispatch, useSelector} from "react-redux";
+import TableSkeleton from "../../component/shared/TableSkeleton.jsx";
+import { adminAllMessages } from "../../redux/features/thunks/admin.jsx";
+
 
 export default function MessageManagement(){
 
-  const messageSampleData = [ 
-    { _id: "hfhghghghghghghghghg45542", 
-      attachments: [], 
-      content:"i am ironman, \nlove you 3000, i am ironman, \nlove you 3000, i am ironman, \nlove you 3000, i am ironman, \nlove you 3000, i am ironman, love you \n3000i am ironman, love you 3000i am ironman,love you 3000i am ironman, love you 3000", 
-      sender: { _id: "hfhghghghghghghghghg45542", name:"gaganshu yadav", avatar: "https://images.unsplash.com/photo-1448301858776-07f780e9c9da?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGJ1aWxkaW5nc3xlbnwwfHwwfHx8MA%3D%3D"}, 
-      chatId: "hfhghghghghghghghghg45542", 
-      groupChat: true, 
-      time: "october 16th 2023, wednesday"
-    },
-    { _id: "hfhghghghghghghghghg45541", 
-      attachments: ["https://images.unsplash.com/photo-1448301858776-07f780e9c9da?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGJ1aWxkaW5nc3xlbnwwfHwwfHx8MA%3D%3D"], 
-      content:"i am ironman, love you 3000", 
-      sender: { _id: "hfhghghghghghghghghg45541", name:"gaganshu yadav", avatar: "https://images.unsplash.com/photo-1448301858776-07f780e9c9da?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGJ1aWxkaW5nc3xlbnwwfHwwfHx8MA%3D%3D"}, 
-      chatId: "hfhghghghghghghghghg45541", 
-      groupChat: false, 
-      time: "october 16th 2023, wednesday"
-    },
-    { _id: "hfhghghghghghghghghg45543", 
-      attachments: [], 
-      content:"i am ironman, love you 3000", 
-      sender: { _id: "hfhghghghghghghghghg45543", name:"gaganshu yadav", avatar: "https://images.unsplash.com/photo-1448301858776-07f780e9c9da?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGJ1aWxkaW5nc3xlbnwwfHwwfHx8MA%3D%3D"}, 
-      chatId: "hfhghghghghghghghghg45543", 
-      groupChat: true, 
-      time: "october 16th 2023, wednesday"
-    },
-    { _id: "hfhghghghghghghghghg45544", 
-      attachments:  [ "https://images.unsplash.com/photo-1448301858776-07f780e9c9da?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGJ1aWxkaW5nc3xlbnwwfHwwfHx8MA%3D%3D"], 
-        content:"i am ironman, love you 3000", 
-        sender: { _id: "hfhghghghghghghghghg45544", name:"gaganshu yadav", avatar: "https://images.unsplash.com/photo-1448301858776-07f780e9c9da?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGJ1aWxkaW5nc3xlbnwwfHwwfHx8MA%3D%3D"},
-        chatId: "hfhghghghghghghghghg45544", 
-        groupChat: true, 
-        time: "october 16th 2023, wednesday"
-    },
 
-    { _id: "hfhghghghghghghghghg45545", 
-      attachments: [], 
-      content:"i am ironman, love you 3000",
-       sender: { _id: "hfhghghghghghghghghg45545", name:"gaganshu yadav", avatar: "https://images.unsplash.com/photo-1448301858776-07f780e9c9da?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGJ1aWxkaW5nc3xlbnwwfHwwfHx8MA%3D%3D"}, chatId: "hfhghghghghghghghghg45545", groupChat: false, time: "october 16th 2023, wednesday"},
-    ]
+  const dispatch = useDispatch();
+  const { dashboardIsLoading, allMessages} = useSelector(state=>state.admin); 
 
     const columns = [
       { field: "id", headerName: "ID", headerClassName:"table-header", cellClassName:"single-cell",  width:250 },
@@ -55,13 +23,13 @@ export default function MessageManagement(){
             <Box sx={{height:"100%", display:"flex", alignItems:"center"}}>
               {
                 params.row.attachments && params.row.attachments.length>0 ? params.row.attachments.map(( attachment, i)=>{
-                  const url = attachment;
+                  const url = attachment.url;
                   console.log(url);
                   const file = fileFormat(url);
                   return(
-                    <Box sx={{border:"none"}}>
+                    <Box sx={{border:"none", height:"100%", width:"100%",display:"flex", justifyContent:"center", alignItems:"start"}}>
                       <a href={url} target="_blank">
-                        { RenderAttachment(file,url)}
+                        { RenderAttachment(file,url, "200px","140px" )}
                       </a>
                     </Box>
                   )
@@ -92,7 +60,7 @@ export default function MessageManagement(){
       { field: "time", headerName: "Time", headerClassName:"table-header" , cellClassName:"single-cell", width: 250}
     ];
     
-  const rows = messageSampleData && messageSampleData.map( ( message)=>{
+  const rows = allMessages && allMessages.map( ( message)=>{
                       return { 
                         id: message._id, 
                         attachments: message.attachments, 
@@ -104,14 +72,24 @@ export default function MessageManagement(){
                       };
                   })
       
+
     useEffect(()=>{
        
+      dispatch( adminAllMessages());
     },[]);
+
 
     return(
         <>
           <AdminLayout>
+            {
+              dashboardIsLoading
+              ?
+              <TableSkeleton/>
+              :
               <Table heading={"ALL MESSAGES"} rows={rows} columns={columns} heightByMsg={true} />
+            }
+              
           </AdminLayout>
         </>
     )

@@ -3,7 +3,14 @@ import { List, ListItem, ListItemAvatar, Avatar, ListItemText, IconButton } from
 import AddIcon from "@mui/icons-material/AddCircle";
 import RemoveIcon from "@mui/icons-material/RemoveCircle";
 
-const UserItem = ({ user, handler, handlerIsLoading=false, isAdded=false, styling={}}) => {
+const UserItem = ({ 
+  user, 
+  handler, 
+  handlerIsLoading=false, 
+  isAdded=false, 
+  styling={},
+  firstIcon = ""
+}) => {
 
   
   return (
@@ -27,11 +34,13 @@ const UserItem = ({ user, handler, handlerIsLoading=false, isAdded=false, stylin
                         }}
             />
             :
-            <AddIcon sx={{ 
+            (firstIcon ? firstIcon : (<AddIcon sx={{ 
                          borderRadius:"50%", fontSize:"44px", color: handlerIsLoading ? "gray" : "rgb(78, 78, 243)",transition:"all 500ms",
                          ":hover":{ color:"rgb(160, 160, 245)"} 
                       }}
-            />
+            />)
+            )
+            
           }
               
           </IconButton>

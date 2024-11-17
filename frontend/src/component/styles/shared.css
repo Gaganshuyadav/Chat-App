@@ -1,4 +1,6 @@
 
+
+
 @media screen and (min-width:800px){
     
 .content-handle,.chatListSpecific::-webkit-scrollbar{
@@ -20,10 +22,4 @@
     border: none;
 }
 
-}
-
-
-.ds{
-    color:rgb(234, 198, 188);
-    background-color: rgb(187, 200, 187);
 }

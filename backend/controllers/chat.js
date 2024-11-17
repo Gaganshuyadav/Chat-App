@@ -625,7 +625,7 @@ const deleteChatMessages = catchAsyncErrors( async( req, res, next)=>{
             if(!message.content){
                
                for(let i=0; i<message.attachments.length; i++){
-                console.log("=== ",message.attachments[i]);
+                
                 publicIDsForCloudinary.push( message.attachments[i].public_id);
                } 
             }
@@ -641,10 +641,7 @@ const deleteChatMessages = catchAsyncErrors( async( req, res, next)=>{
         }
 
         const cloud = await Promise.all(deleteFromCloudinaryPromise);
-        console.log(publicIDsForCloudinary)
-        console.log("-------")
-        console.log(cloud);
-    
+      
         //__delete all messages
         await Message.deleteMany({chat: chat._id});
 

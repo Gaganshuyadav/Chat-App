@@ -8,13 +8,32 @@ import GroupIcon from "@mui/icons-material/Group";
 import PersonIcon from "@mui/icons-material/Person";
 import MessageIcon from "@mui/icons-material/Message";
 import { LineChart, DoughnutChart} from "../../component/Specific/Charts";
+import  { useEffect} from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { adminAllDashboardInfo } from "../../redux/features/thunks/admin";
+import DashboardSkeletonLoader from "../../component/layout/DashboardSkeletonLoader";
 
 export default function Dashboard(){
+
+  const dispatch = useDispatch();
+  const { allStats, dashboardIsLoading} = useSelector(state=>state.admin);
     
+    useEffect(()=>{
+
+      dispatch( adminAllDashboardInfo());
+    },[]);
+
+
+
     return(
         <>
           <AdminLayout>
-            <div >
+            {
+              dashboardIsLoading
+              ?
+              <DashboardSkeletonLoader/>
+              :
+              (<div >
 
               {/* (1).Appbar */}
               { Appbar}
@@ -29,7 +48,7 @@ export default function Dashboard(){
                 <Paper elevation={4} sx={{ width:{md:"100%", lg:"55%"}, borderRadius:"10px"}} >
                   <Typography sx={{fontSize:"18px", fontWeight:"500", margin:"1rem"}}>Last Messages</Typography>
                     <Box sx={{ margin:{ xs:"10px 0 10px 10px",md:"20px 0px 20px 20px "}}}>
-                      <LineChart dataArray={[ 10,20,30,40,50,20,30]}/>
+                      <LineChart dataArray={allStats?.chartMessages}/>
                     </Box>
                 </Paper>
 
@@ -37,7 +56,7 @@ export default function Dashboard(){
                 <Paper sx={{ width:{ xs:"90%", lg:"41%"}, borderRadius:"10px", margin:{xs:"2rem auto",lg:"2rem 0 0 0"}, marginBottom:{xs:"0px"}}}>
                   <Box sx={{position:"relative",display:"flex", alignItems:"center", justifyContent:"center"}}>
                     <DoughnutChart 
-                        value={[ "23", "66"]}
+                        value={ allStats && [ allStats.DirectChats, allStats.GroupChats]}
                         labels={[ "Single Chats", "Group Chats"]} 
                     />
                     <Stack flexDirection={"row"} sx={{position:"absolute"}}>
@@ -51,9 +70,10 @@ export default function Dashboard(){
               </Stack>
 
               {/* (3).Widgets */}
-              {Widgets}
+              <Widgets Stats={ allStats && allStats}/>
 
-            </div>
+            </div>)
+          }
           </AdminLayout>
         </>
     )
@@ -96,20 +116,24 @@ const Widget = ( { Title, Value, Icon}) =>{
   )
 }
 
+
 //Widgets
-const Widgets = (
-  <Stack 
-      sx={{
-        flexDirection:{xs:"column",lg:"row"}, 
-        margin:{xs:"2rem 0.8rem 1rem 0.8rem",sm:"2rem 1rem 1rem 1rem"},
-        justifyContent:"space-between",
-        alignItems:"center",
-      }}
-  >
-    <Widget Title={ "Users"} Value={ 34} Icon={<PersonIcon/>} />
-    <Widget Title={ "Chats"} Value={ 3} Icon={<GroupIcon/>} />
-    <Widget Title={ "Messages"} Value={ 45} Icon={<MessageIcon/>} />
-  </Stack>
-)
+const Widgets =( { Stats=0})=>{
+
+  return(
+      <Stack 
+          sx={{
+            flexDirection:{xs:"column",lg:"row"}, 
+            margin:{xs:"2rem 0.8rem 1rem 0.8rem",sm:"2rem 1rem 1rem 1rem"},
+            justifyContent:"space-between",
+            alignItems:"center",
+          }}
+      >
+        <Widget Title={ "Users"} Value={ Stats?.users} Icon={<PersonIcon/>} />
+        <Widget Title={ "Chats"} Value={ Stats?.chats} Icon={<GroupIcon/>} />
+        <Widget Title={ "Messages"} Value={ Stats?.messages} Icon={<MessageIcon/>} />
+      </Stack>
+      )
+}
 
 

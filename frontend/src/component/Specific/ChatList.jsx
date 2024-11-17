@@ -2,6 +2,7 @@ import ChatItem from "../shared/ChatItem";
 import { Box} from "@mui/material";
 import "../styles/shared.css";
 import { useParams, useNavigate } from "react-router-dom";
+import { motion} from "motion/react";
 
 export default function ChatList({ chats}){
 
@@ -23,7 +24,7 @@ export default function ChatList({ chats}){
     return(
         <>
         {/* chatList element */}
-        <Box className="chatListSpecific" sx={{border:"1px solid blue", height:"100%", width:{xs:"70vw", sm:"100%"},  overflowY:"auto" }}>
+        <Box className="chatListSpecific" sx={{height:"100%", width:{xs:"70vw", sm:"100%"},  overflowY:"auto" }}>
         {
             chats && chats.map( ( chat, idx)=>{
                 return <ChatItem key={idx} idx={idx} chat={ chat}/>

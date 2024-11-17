@@ -4,6 +4,7 @@ import componentReducer from "./features/Slices/componentSlice.jsx";
 import notifyReducer from "./features/Slices/notifySlice.jsx";
 import chatReducer from "./features/Slices/chatSlice.jsx";
 import messageReducer from "./features/Slices/messageSlice.jsx";
+import adminReducer from "./features/Slices/adminSlice.jsx";
 import api from "./api/api.jsx";
 
 const store = configureStore({
@@ -13,6 +14,7 @@ const store = configureStore({
         notify: notifyReducer,
         chat: chatReducer,
         message: messageReducer,
+        admin: adminReducer,
         [api.reducerPath]: api.reducer,
 
     },

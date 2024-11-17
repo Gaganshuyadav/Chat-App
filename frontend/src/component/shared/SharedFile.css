@@ -1,5 +1,10 @@
-ff{
-    background-color: rgb(146, 91, 81);
-    word-wrap:break-word;
-    overflow-wrap: break-word;
+
+
+.lightGrayClass:hover{
+    background-color: rgba(0, 0, 0, 0.274);
 }
+
+.blackClass:hover{
+    background-color: black;
+}
+

@@ -105,8 +105,8 @@ const AddMemberDialog = ( { chatId }) => {
                     }
                     <DialogActions>
                         <Box sx={{ margin:{xs:"1rem",sm:"2rem"}}}>
-                            <Button color="error" onClick={()=>{ dispatch( setIsAddedGroup(false))}}>CANCEL</Button>
-                            <Button onClick={addMemberSubmitHandler} color="primary" variant="contained" disabled={ addGMResult.isLoading} sx={{ marginLeft:"1rem"}}>SUBMIT CHANGES</Button>
+                            <Button sx={{color:"black","&:hover":{backgroundColor:"gray"}}} onClick={()=>{ dispatch( setIsAddedGroup(false))}}>CANCEL</Button>
+                            <Button sx={{backgroundColor:"black", marginLeft:"1rem", "&:hover":{backgroundColor:"rgba(115,111,111,1)"}}} onClick={addMemberSubmitHandler} variant="contained" disabled={ addGMResult.isLoading} >SUBMIT CHANGES</Button>
                         </Box>
                     </DialogActions>
                 </>

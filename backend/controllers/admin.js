@@ -17,7 +17,7 @@ const adminLogin = catchAsyncErrors( async( req, res, next)=>{
         return next( new errorHandler("Invalid Admin Key", 401));
     }
 
-    const token = await jwt.sign( secretKey, process.env.JWT_SECRET);
+    const token = jwt.sign( secretKey, process.env.JWT_SECRET);
 
     const cookieOptions = {
         maxAge: 15 * 60 * 1000 , //only for 15minutes
@@ -28,6 +28,7 @@ const adminLogin = catchAsyncErrors( async( req, res, next)=>{
 
     res.status(201).cookie("chit-chat-Admin-Token", token, cookieOptions).json({
         success: true,
+        token,
         message: "Authenticated Successfully, Welcome BOSS",
     });
 

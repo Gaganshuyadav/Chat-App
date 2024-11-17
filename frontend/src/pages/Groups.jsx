@@ -1,7 +1,6 @@
 import { useState, memo, useEffect, Suspense, lazy} from 'react';
 import { Link, useNavigate , useSearchParams} from 'react-router-dom';
 import Grid from '@mui/material/Grid2';
-import UserItem from '../component/shared/UserItem';
 import { Done, Edit, KeyboardBackspace, Menu, Add, Delete} from '@mui/icons-material';
 import { IconButton, Box, Tooltip, Drawer, Typography, Avatar, AvatarGroup, TextField, Button, Backdrop} from "@mui/material";
 const ConfirmDeleteDialog = lazy(()=>import("../component/dialogs/ConfirmDeleteDialog"));
@@ -11,6 +10,7 @@ import { useAddGroupMembersMutation, useGetChatDetailsQuery, useGetMyGroupsQuery
 import { toast} from "react-hot-toast";
 import { useDispatch, useSelector} from "react-redux";
 import { setIsAddedGroup, setIsDeleteGroup, setIsMobile } from '../redux/features/Slices/componentSlice';
+import { PersonRemove} from "@mui/icons-material";
 
 export default function Groups(){
 
@@ -186,7 +186,7 @@ export default function Groups(){
             <Typography sx={{fontWeight:"500"}}>DELETE GROUP</Typography>
           </Button>
 
-          <Button color="primary" onClick={()=>{dispatch( setIsAddedGroup(true))}} variant="contained"  sx={{margin:{xs:"1rem 0 0.6rem 0", sm:"0 0 0 1rem"}}}>
+          <Button sx={{backgroundColor:"black", margin:{xs:"1rem 0 0.6rem 0", sm:"0 0 0 1rem"}, "&:hover":{backgroundColor:"rgba(57,56,56,1)"}}} onClick={()=>{dispatch( setIsAddedGroup(true))}} variant="contained">
             <Add/>
             <Typography>ADD MEMBER</Typography>
           </Button>
@@ -245,7 +245,7 @@ export default function Groups(){
             <Box > 
               {
                 getChatDetails?.currentData?.chat?.members.length  >0 && getChatDetails?.data?.chat?.members.map((user)=>{
-                  return <UserItem user={ user} handler={ removeMemberHandler} handlerIsLoading={ removeGMResult.isLoading} isAdded={true} styling={{ borderRadius:"10px", margin:"0 0 30px 0", boxShadow:"0 0 8px -1px gray" }}/>
+                  return <GroupMember user={ user} handler={ removeMemberHandler} handlerIsLoading={ removeGMResult.isLoading} />
                 })
               }
             </Box>
@@ -328,3 +328,19 @@ const GroupListItem =  memo( ({ group, chatId}) =>{
     </Link>
   )
 })
+
+
+const GroupMember = ( { user, handler, handlerIsLoading})=>{
+  return(
+    <>
+    <Box sx={{ borderBottom:"1px solid rgba(224,224,224,1)", display:"flex", alignItems:"center", justifyContent:"space-between", padding:"5px", width:"90%", margin:"0px auto", "&:hover":{backgroundColor:"rgba(224,224,224,1)"} }}>
+      
+      <div style={{display:"flex", alignItems:"center", padding:"5px", width:"80%"}}>
+          <Avatar src={user?.avatar} sx={{width:"60px",height:"60px", marginLeft:"2%"}} />
+          <Typography sx={{margin:"0% 6%"}}>{user?.name}</Typography>
+      </div>
+      <IconButton onClick={()=>{handler(user?._id)}} disabled={handlerIsLoading} sx={{alignSelf:"center",  marginRight:"10px", backgroundColor:"red", color:"black", "&:hover":{ backgroundColor:"black", color:"red", width:"45px", height:"45px", transition:" 1000ms all"}}}><PersonRemove/></IconButton>
+    </Box>
+    </>
+  )
+}

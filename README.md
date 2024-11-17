@@ -17,7 +17,7 @@ This is a real-time chat application built using the MERN stack (MongoDB, Expres
 - **Error Handling**: Comprehensive error handling throughout the application.
 - **Select Messages**: Deleting messages by selecting it(multiple)
 - **Responsive UI**: Built with Material UI for a seamless user experience.
-- **Infinite Scrolling**: Used in UI for Fetching Old chats, 20 messages per page.
+- **Infinite Scrolling**: Used in UI for Fetching Old chats, 20 messages per page, handle new messages, and user typing... in real-time.
 - **Admin Control Panel**: Manage Users, messages and groups, last 7 days activities, charts.
 
 ## Tech Stack

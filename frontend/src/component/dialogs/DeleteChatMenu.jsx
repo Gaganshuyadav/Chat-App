@@ -51,6 +51,7 @@ export default function DeleteChatMenu( { anchorEl} ){
                   }
                   else{
                       toast.success("Chat Deleted Successfully",{ id: toastId});
+                      navigate("/");
                   }
             }
             else{
@@ -109,7 +110,6 @@ export default function DeleteChatMenu( { anchorEl} ){
             const result = await deleteMessages({ chatId: params.chatId, messageArray:[], all: true});
             if(result.data){
                 toast.success("All Messages Deleted Successfully",{ id: toastId});
-               
             }
             else{
 

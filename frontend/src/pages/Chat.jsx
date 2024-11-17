@@ -407,7 +407,7 @@ console.log(isUserLogoutConfirmation);
       <Fragment>
 
         {/* messages */}
-        <div className="messagesRender" ref={scrollRef} onScroll={handleInfiScroll} style={{height:"87%", overflow:"auto", display:"flex", flexDirection:"column", padding:"5px 14px"}}>
+        <div className="messagesRender" ref={scrollRef} onScroll={handleInfiScroll} style={{height:"87%", overflowY:"auto", overflowX:"hidden", display:"flex", flexDirection:"column", padding:"5px 14px"}}>
       
             {/* loading */}
             {

@@ -2,17 +2,14 @@ import { useEffect} from "react";
 import AdminLayout from "../../component/layout/AdminLayout";
 import Table from "../../component/shared/Table";
 import { Box, Avatar} from "@mui/material";
+import TableSkeleton from "../../component/shared/TableSkeleton";
+import { useSelector,useDispatch } from "react-redux";
+import { adminAllUsers } from "../../redux/features/thunks/admin";
 
 export default function UserManagement(){
 
-
-  const userSampleData = [ 
-    { _id: "hfhghghghghghghghghg45541",name:"gaganshu yadav", username: "gaganshu yadav",avatar: "https://images.unsplash.com/photo-1448301858776-07f780e9c9da?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGJ1aWxkaW5nc3xlbnwwfHwwfHx8MA%3D%3D", friends: 43, groups: 65},
-    { _id: "hfhghghghghghghghghg45542",name:"gaganshu yadav", username: "gaganshu yadav",avatar: "https://images.unsplash.com/photo-1448301858776-07f780e9c9da?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGJ1aWxkaW5nc3xlbnwwfHwwfHx8MA%3D%3D", friends: 43, groups: 65},
-    { _id: "hfhghghghghghghghghg45543",name:"gaganshu yadav", username: "gaganshu yadav",avatar: "https://images.unsplash.com/photo-1448301858776-07f780e9c9da?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGJ1aWxkaW5nc3xlbnwwfHwwfHx8MA%3D%3D", friends: 43, groups: 65},
-    { _id: "hfhghghghghghghghghg45544",name:"gaganshu yadav", username: "gaganshu yadav",avatar: "https://images.unsplash.com/photo-1448301858776-07f780e9c9da?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGJ1aWxkaW5nc3xlbnwwfHwwfHx8MA%3D%3D", friends: 43, groups: 65},
-    { _id: "hfhghghghghghghghghg45545",name:"gaganshu yadav", username: "gaganshu yadav",avatar: "https://images.unsplash.com/photo-1448301858776-07f780e9c9da?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGJ1aWxkaW5nc3xlbnwwfHwwfHx8MA%3D%3D", friends: 43, groups: 65},
-    ]
+  const dispatch = useDispatch();
+  const { allUsers, dashboradIsLoading} = useSelector(state=>state.admin);
 
   const columns = [
     { field: "id", headerName: "ID", headerClassName:"table-header",  width:250 },
@@ -29,18 +26,27 @@ export default function UserManagement(){
     { field: "groups", headerName: "Groups", headerClassName:"table-header" , width: 100,  } ,
   ]
     
-  const rows = userSampleData && userSampleData.map( ( user)=>{
+  const rows = allUsers && allUsers.map( ( user)=>{
                       return { id: user._id, avatar: user.avatar, name: user.name, username: user.username, friends: user.friends, groups: user.groups};
                   })
+
+
       
     useEffect(()=>{
-       
+       dispatch( adminAllUsers());
     },[]);
 
     return(
         <>
           <AdminLayout>
-              <Table heading={"ALL USERS"} rows={rows} columns={columns} />
+              {
+                dashboradIsLoading
+                ?
+                <TableSkeleton/>
+                :
+                <Table heading={"ALL USERS"} rows={rows} columns={columns} />
+              }
+              
           </AdminLayout>
         </>
     )
