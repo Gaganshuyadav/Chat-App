@@ -17,7 +17,7 @@ This is a real-time chat application built using the MERN stack (MongoDB, Expres
 - **Error Handling**: Comprehensive error handling throughout the application.
 - **Select Messages**: Deleting messages by selecting it(multiple)
 - **Responsive UI**: Built with Material UI for a seamless user experience.
-- **Infinite Scrolling**: Used in UI for Fetching Old chats, 20 messages per page, handle new messages, and user typing... in real-time.
+- **Infinite Scrolling**: Used in UI for Fetching Old chats, 20 messages per page.
 - **Admin Control Panel**: Manage Users, messages and groups, last 7 days activities, charts.
 
 ## Tech Stack
@@ -45,6 +45,25 @@ This is a real-time chat application built using the MERN stack (MongoDB, Expres
   - Dotenv
   - Express-validator
   - cloudinary
+
+
+
+
+## Screen View
+
+# ScreenShot 1
+![Docs Editor 1](./client/public/screenshots/screenshot-chit-chat-1.png)
+
+# ScreenShot 2
+![Docs Editor 2](./client/public/screenshots/screenshot-chit-chat-2.png)
+
+# ScreenShot 3
+![Docs Editor 1](./client/public/screenshots/screenshot-chit-chat-3.png)
+
+# ScreenShot 4
+![Docs Editor 2](./client/public/screenshots/screenshot-chit-chat-4.png)
+
+
 
 ## Installation
 
