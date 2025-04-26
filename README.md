@@ -57,6 +57,14 @@ This is a real-time chat application built using the MERN stack (MongoDB, Expres
 # ScreenShot 2
 ![Docs Editor 2](./frontend/public/screenshots/screenshot-chit-chat-2.png)
 
+# ScreenShot 3
+![Docs Editor 1](./frontend/public/screenshots/screenshot-chit-chat-5.png)
+
+# ScreenShot 4
+![Docs Editor 2](./frontend/public/screenshots/screenshot-chit-chat-6.png)
+
+# ScreenShot 5
+![Docs Editor 2](./frontend/public/screenshots/screenshot-chit-chat-7.png)
 
 
 
@@ -69,6 +77,12 @@ This is a real-time chat application built using the MERN stack (MongoDB, Expres
 - NPM or Yarn
 
 ### Steps to Run the Application
+
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/Gaganshuyadav/Chat-App.git
+   cd chat-app
+  
 
 1. **Clone the repository**:
    ```bash
