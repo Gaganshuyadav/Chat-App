@@ -52,16 +52,16 @@ This is a real-time chat application built using the MERN stack (MongoDB, Expres
 ## Screen View
 
 # ScreenShot 1
-![Docs Editor 1](./client/public/screenshots/screenshot-chit-chat-1.png)
+![Docs Editor 1](./frontend/public/screenshots/screenshot-chit-chat-1.png)
 
 # ScreenShot 2
-![Docs Editor 2](./client/public/screenshots/screenshot-chit-chat-2.png)
+![Docs Editor 2](./frontend/public/screenshots/screenshot-chit-chat-2.png)
 
 # ScreenShot 3
-![Docs Editor 1](./client/public/screenshots/screenshot-chit-chat-3.png)
+![Docs Editor 1](./frontend/public/screenshots/screenshot-chit-chat-3.png)
 
 # ScreenShot 4
-![Docs Editor 2](./client/public/screenshots/screenshot-chit-chat-4.png)
+![Docs Editor 2](./frontend/public/screenshots/screenshot-chit-chat-4.png)
 
 
 
